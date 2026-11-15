@@ -1,0 +1,30 @@
+# ---- 候选池与本地构建缓存（可由 tools/ 脚本重建，不入库）----
+_candidates/
+_m2/
+
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.iml
+.settings/
+.classpath
+.project
+
+# ---- 实验产物中的临时工作区 ----
+worktrees/
+results/**/_scratch/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+
+# ---- 临时脚本目录（正式版在 tools/）----
+_tools/
