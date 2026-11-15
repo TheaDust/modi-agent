@@ -1,0 +1,421 @@
+{
+  "root": "projectA",
+  "files_total": 83,
+  "files_main": 62,
+  "modules": [
+    "bookkeeping-core",
+    "bookkeeping-examples",
+    "bookkeeping-jdbc",
+    "bookkeeping-spring-boot-starter"
+  ],
+  "packages": 11,
+  "package_edges": 40,
+  "cycles": [
+    [
+      "com.yanimetaxas.bookkeeping.dao",
+      "com.yanimetaxas.bookkeeping.model",
+      "com.yanimetaxas.bookkeeping.report",
+      "com.yanimetaxas.bookkeeping.validation"
+    ],
+    [
+      "com.yanimetaxas.bookkeeping",
+      "com.yanimetaxas.bookkeeping.memory"
+    ]
+  ],
+  "cycle_count": 2,
+  "layer_violations": [
+    {
+      "file": "com.yanimetaxas.bookkeeping.validation",
+      "imports": "com.yanimetaxas.bookkeeping.dao"
+    }
+  ],
+  "layer_violation_count": 1,
+  "duplication": [
+    {
+      "method": "requireCurrent",
+      "arity": 0,
+      "module_a": "bookkeeping-core",
+      "file_a": "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java",
+      "module_b": "bookkeeping-jdbc",
+      "file_b": "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java",
+      "similarity": 0.833,
+      "loc_a": 7,
+      "loc_b": 7
+    },
+    {
+      "method": "findTransactionsByAccountRef",
+      "arity": 1,
+      "module_a": "bookkeeping-core",
+      "file_a": "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java",
+      "module_b": "bookkeeping-jdbc",
+      "file_b": "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransferService.java",
+      "similarity": 0.762,
+      "loc_a": 15,
+      "loc_b": 10
+    },
+    {
+      "method": "createAccount",
+      "arity": 3,
+      "module_a": "bookkeeping-core",
+      "file_a": "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java",
+      "module_b": "bookkeeping-jdbc",
+      "file_b": "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountService.java",
+      "similarity": 0.737,
+      "loc_a": 11,
+      "loc_b": 6
+    },
+    {
+      "method": "getAccountBalance",
+      "arity": 1,
+      "module_a": "bookkeeping-core",
+      "file_a": "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java",
+      "module_b": "bookkeeping-jdbc",
+      "file_b": "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountService.java",
+      "similarity": 0.706,
+      "loc_a": 12,
+      "loc_b": 7
+    },
+    {
+      "method": "open",
+      "arity": 2,
+      "module_a": "bookkeeping-core",
+      "file_a": "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java",
+      "module_b": "bookkeeping-jdbc",
+      "file_b": "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java",
+      "similarity": 0.536,
+      "loc_a": 24,
+      "loc_b": 21
+    }
+  ],
+  "duplication_count": 5,
+  "multi_backend_rules": [
+    {
+      "method": "accountExists",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryAccountDao.java",
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountRepository.java",
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "accountService",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "createAccount",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryAccountDao.java",
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountRepository.java",
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "dropAll",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "findAllTransactions",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransferService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "findTransactionsByAccountRef",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransferService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getAccount",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryAccountDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getAccountBalance",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getAccounts",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryAccountDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getAllTransactions",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryTransactionDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransactionRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getClientRef",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryAccountDao.java",
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryTransactionDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountRepository.java",
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransactionRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getTransactionByRef",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java",
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryTransactionDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransactionRepository.java",
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransferService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getTransactionRefsForAccount",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryTransactionDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransactionRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "getTransactions",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryTransactionDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransactionRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "listAccounts",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcAccountService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "open",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java",
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/SimpleDataSource.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "requireCurrent",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "setClock",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "storeTransaction",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryTransactionDao.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransactionRepository.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "transferFunds",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcTransferService.java"
+        ]
+      },
+      "backend_count": 2
+    },
+    {
+      "method": "transferService",
+      "backends": {
+        "memory": [
+          "bookkeeping-core/src/main/java/com/yanimetaxas/bookkeeping/memory/InMemoryStorageProvider.java"
+        ],
+        "jdbc": [
+          "bookkeeping-jdbc/src/main/java/com/yanimetaxas/bookkeeping/jdbc/JdbcStorageProvider.java"
+        ]
+      },
+      "backend_count": 2
+    }
+  ],
+  "multi_backend_rule_count": 21,
+  "public_types": 58,
+  "public_methods": 242,
+  "graph": {
+    "com.yanimetaxas.bookkeeping": [
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.memory",
+      "com.yanimetaxas.bookkeeping.model",
+      "com.yanimetaxas.bookkeeping.report",
+      "com.yanimetaxas.bookkeeping.service",
+      "com.yanimetaxas.bookkeeping.validation"
+    ],
+    "com.yanimetaxas.bookkeeping.dao": [
+      "com.yanimetaxas.bookkeeping.model"
+    ],
+    "com.yanimetaxas.bookkeeping.examples": [
+      "com.yanimetaxas.bookkeeping",
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.jdbc",
+      "com.yanimetaxas.bookkeeping.memory",
+      "com.yanimetaxas.bookkeeping.model",
+      "com.yanimetaxas.bookkeeping.spring",
+      "com.yanimetaxas.bookkeeping.validation"
+    ],
+    "com.yanimetaxas.bookkeeping.jdbc": [
+      "com.yanimetaxas.bookkeeping",
+      "com.yanimetaxas.bookkeeping.dao",
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.model",
+      "com.yanimetaxas.bookkeeping.service",
+      "com.yanimetaxas.bookkeeping.validation"
+    ],
+    "com.yanimetaxas.bookkeeping.jdbc.integration": [
+      "com.yanimetaxas.bookkeeping",
+      "com.yanimetaxas.bookkeeping.jdbc"
+    ],
+    "com.yanimetaxas.bookkeeping.memory": [
+      "com.yanimetaxas.bookkeeping",
+      "com.yanimetaxas.bookkeeping.dao",
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.model",
+      "com.yanimetaxas.bookkeeping.service",
+      "com.yanimetaxas.bookkeeping.validation"
+    ],
+    "com.yanimetaxas.bookkeeping.model": [
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.report",
+      "com.yanimetaxas.bookkeeping.validation"
+    ],
+    "com.yanimetaxas.bookkeeping.report": [
+      "com.yanimetaxas.bookkeeping.model"
+    ],
+    "com.yanimetaxas.bookkeeping.service": [
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.model"
+    ],
+    "com.yanimetaxas.bookkeeping.spring": [
+      "com.yanimetaxas.bookkeeping",
+      "com.yanimetaxas.bookkeeping.memory",
+      "com.yanimetaxas.bookkeeping.model"
+    ],
+    "com.yanimetaxas.bookkeeping.validation": [
+      "com.yanimetaxas.bookkeeping.dao",
+      "com.yanimetaxas.bookkeeping.exception",
+      "com.yanimetaxas.bookkeeping.model"
+    ]
+  }
+}
