@@ -2,7 +2,8 @@
 """对 Maven 候选逐个真跑 mvn test，记录是否零外部服务即可通过。"""
 import os, re, subprocess, sys, time
 
-BASE = r"E:\my-works\coding\modi-agent\_candidates"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(ROOT, ".cache", "candidates")
 TARGETS = [
     "imetaxas__double-entry-bookkeeping-api",
     "yanndemel__crud-rest-gen",
@@ -23,7 +24,8 @@ for name in TARGETS:
     env = dict(os.environ, MAVEN_OPTS="-Xmx1g", JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8")
     mvn = r"D:\Tools\apache-maven-3.9.14\bin\mvn.cmd"
     try:
-        r = subprocess.run([mvn, "-B", "-Dfile.encoding=UTF-8", "test"],
+        r = subprocess.run([mvn, "-B", "-Dfile.encoding=UTF-8",
+                            "-Dmaven.repo.local=" + os.path.join(ROOT, ".cache", "maven"), "test"],
                            cwd=root, capture_output=True, text=True, encoding="utf-8",
                            errors="replace", timeout=1500, env=env)
         out = r.stdout + "\n" + r.stderr

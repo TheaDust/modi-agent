@@ -2,7 +2,8 @@
 """就地给已克隆候选打分：规模 / 测试 / 外部依赖 / 分层气味。"""
 import json, os, re
 
-BASE = r"E:\my-works\coding\modi-agent\_candidates"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(ROOT, ".cache", "candidates")
 BAD = re.compile(r"mysql|postgresql|mariadb|mongodb|redis|redisson|mongo|cassandra|elasticsearch", re.I)
 
 

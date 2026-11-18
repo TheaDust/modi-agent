@@ -2,8 +2,8 @@
 """架构结构分析器：包依赖图、循环依赖、层级违规、跨模块重复实现、public API 面积。
 
 用法：
-    python tools/structure.py projectA                 # 分析并打印
-    python tools/structure.py projectA --json out.json # 同时导出 JSON（用于前后对比）
+    python tools/structure.py benchmarks/bookkeeping/source
+    python tools/structure.py benchmarks/bookkeeping/source --json out.json
 """
 import argparse, json, os, re, sys
 from collections import defaultdict

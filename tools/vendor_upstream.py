@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""把上游候选工作树固化到 projectA/（排除 .git 与构建产物），并记录 provenance。"""
+"""把记账候选固化到 benchmarks/bookkeeping/source/，并记录 provenance。"""
 import json, os, shutil, subprocess, sys
 
-ROOT = r"E:\my-works\coding\modi-agent"
-SRC = os.path.join(ROOT, "_candidates", "imetaxas__double-entry-bookkeeping-api")
-DST = os.path.join(ROOT, "projectA")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.join(ROOT, ".cache", "candidates", "imetaxas__double-entry-bookkeeping-api")
+BENCHMARK = os.path.join(ROOT, "benchmarks", "bookkeeping")
+DST = os.path.join(BENCHMARK, "source")
 SKIP_DIRS = {".git", "target", ".idea", ".vscode", "build", ".gradle", "__pycache__"}
 SKIP_EXT = {".class", ".jar", ".war"}
 
@@ -49,7 +50,7 @@ info = {
     "vendored_at": subprocess.run(["git", "-C", ROOT, "rev-parse", "--abbrev-ref", "HEAD"],
                                   capture_output=True, text=True, encoding="utf-8").stdout.strip(),
 }
-os.makedirs(os.path.join(ROOT, "docs"), exist_ok=True)
-with open(os.path.join(ROOT, "docs", "upstream-provenance.json"), "w", encoding="utf-8") as fh:
+os.makedirs(BENCHMARK, exist_ok=True)
+with open(os.path.join(BENCHMARK, "provenance.json"), "w", encoding="utf-8") as fh:
     json.dump(info, fh, ensure_ascii=False, indent=2)
 print("provenance written")

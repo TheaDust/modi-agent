@@ -1,6 +1,10 @@
 # ---- 候选池与本地构建缓存（可由 tools/ 脚本重建，不入库）----
-_candidates/
-_m2/
+.cache/
+node_modules/
+.env
+.env.*
+!.env.example
+results/
 
 # ---- Java / Maven ----
 target/
@@ -25,9 +29,6 @@ results/**/_scratch/
 __pycache__/
 *.pyc
 .venv/
-
-# ---- 临时脚本目录（正式版在 tools/）----
-_tools/
 
 # ---- 测试运行日志（构建产物）----
 derby.log

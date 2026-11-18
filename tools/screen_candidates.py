@@ -2,7 +2,8 @@
 """批量筛选可作为「项目 A」的候选：Maven 构建 + 测试零外部依赖 + 规模适中。"""
 import json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 
-BASE = r"E:\my-works\coding\modi-agent\_candidates"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(ROOT, ".cache", "candidates")
 HDRS = {"User-Agent": "modi-agent", "Accept": "application/vnd.github+json"}
 QUERIES = [
     '"jdbc:h2" in:readme spring-boot language:Java stars:20..600 pushed:>2025-01-01',

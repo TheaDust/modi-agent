@@ -1,92 +1,102 @@
 # modi-agent
 
-**基于 AI Agent 的软件体系结构可修改性优化** —— 课程大作业
+**基于 AI Agent 的软件体系结构可修改性优化**——软件体系结构课程实验。
 
-> 研究命题：对可修改性做架构层面的**预先投资**，能否显著降低后续需求变更的实现成本？
+研究问题：对可修改性做架构层面的预先投资，能否降低后续需求变更的实现成本？
 
----
+## 从这里开始
 
-## 实验全貌
-
-```
-                      上游开源项目 A（复式记账引擎）
-                              │
-                    ┌─────────┴─────────┐
-                    │  Agent：可修改性优化 │   ← 唯一的架构改造
-                    └─────────┬─────────┘
-                              ▼
-                      优化后代码 B（行为等价，架构更友好）
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │  同一 Agent 实现同一组新需求 R1..R5        │
-        ▼                     ▼                     │
-   在 A 上改 → C        在 B 上改 → D               │
-        │                     │                     │
-        └──────────┬──────────┘                     │
-                   ▼                                │
-        diff(A,C)  vs  diff(B,D)  ← 核心证据链      │
-                   │                                │
-                   └──────── 累积 5 轮 → 架构劣化曲线┘
-```
-
-**唯一自变量**：起点代码是 A 还是 B。其余全部钉死（同一 agent、同一模型、同一提示词、同一工具集、同一对外 API 契约）。
-
----
+- [实验设计](docs/experiment-design.md)：研究假设、控制变量、指标、版本组织与有效性威胁。
+- [记账库基准项目](benchmarks/bookkeeping/README.md)：第一个案例，含源码、需求 R1–R5 和既有架构分析。
+- [cron-utils 基准项目](benchmarks/cron-utils/README.md)：第二个案例，含源码、测试夹具补丁与基线验证记录。
+- [Agent 运行说明](docs/agent-runtime.md)：本机 Pi SDK、`.env`、任务入口和运行日志。
 
 ## 目录
 
-| 路径 | 内容 |
-|---|---|
-| `projectA/` | 上游项目 A（已固化，含 LICENSE 与 provenance） |
-| `docs/00-candidate-selection.md` | **选型记录**：硬标准 + 30+ 候选逐一实测 |
-| `docs/01-experiment-design.md` | **实验设计**：假设 / 控制变量 / 指标 / 反作弊 / 威胁有效性 |
-| `docs/02-architecture-inventory.md` | **A 的架构体检报告**：异味清单 + 量化基线 |
-| `docs/baseline-structure.json` | A 的架构指标基线快照 |
-| `requirements/` | R1–R5 需求定义（规定对外 API，不规定实现位置） |
-| `tools/structure.py` | 架构指标计算器（依赖图 / 环 / 层级违规 / 多后端重复规则） |
-| `tools/` | 选型与验证脚本 |
-| `prompts/` | 优化 / 实现需求 两类提示词（待建） |
-| `agent/` | 被测 agent（待建） |
-| `bench/` | 实验编排与 diff 指标（待建） |
-| `results/` | 各轮产物与指标（待建） |
+```text
+modi-agent/
+├── README.md
+├── docs/
+│   └── experiment-design.md
+├── benchmarks/
+│   ├── bookkeeping/
+│   │   ├── README.md
+│   │   ├── source/               # 固定上游源码
+│   │   ├── requirements/         # R1–R5
+│   │   ├── baseline/             # 结构指标快照
+│   │   ├── provenance.json
+│   │   ├── selection.md
+│   │   └── architecture.md
+│   └── cron-utils/
+│       ├── README.md
+│       ├── source/               # 固定源码及已应用测试夹具
+│       ├── patches/
+│       ├── provenance.json
+│       └── selection.md
+├── tools/                        # 选型、固化、分析与端点探测脚本
+├── agent/                        # Pi SDK 加载、模型配置与运行内核
+├── prompts/                      # 检查、优化和需求实现提示词
+├── bench/                        # 独立工作副本与单轮执行入口
+├── test/                         # 使用本地模拟端点的框架测试
+├── results/                      # 每轮产物与工作副本，不入库
+└── .cache/                       # 本地数据，不入库
+    ├── candidates/               # 候选仓库、筛选结果与 _buildlogs/
+    ├── maven/                    # Maven 依赖缓存
+    └── legacy-tools/             # 保留的早期临时脚本
+```
 
----
+每个基准项目 的源码、需求和证据放在同一目录。A/B 表示同一案例的原版与优化版，不用于区分两个案例。
 
-## 项目 A
+单轮 Agent 已实现；多次配对实验、独立验收与反作弊守卫后续在 `bench/` 中实现。
 
-| 项 | 值 |
-|---|---|
-| 上游 | [imetaxas/double-entry-bookkeeping-api](https://github.com/imetaxas/double-entry-bookkeeping-api) |
-| SHA | `023535235e4151d43a18e6dc7ec8f473bcb59eac`（release 1.0.0） |
-| 许可 | MIT |
-| 规模 | 4 个 Maven 模块 · 62 个主源码文件 · 182 个测试**全绿且零外部服务** |
+## 启动 Agent
 
-**为什么是它**（详见 `docs/00-candidate-selection.md`）：
-
-1. **自带跨后端契约测试**（InMemory / H2 / Derby / HSQL / SQLite）→ 行为等价性有客观判据，不靠 agent 自述；
-2. **存在真实且可量化的架构异味** → 优化有实质空间，差异可测；
-3. **零外部服务依赖** → 评审者与复现者可离线一键跑通。
-
-### A 的架构基线（优化靶子）
-
-| 指标 | 值 |
-|---|---|
-| 包间循环依赖 | **2** |
-| 层级违规（业务包 → 持久化包） | **1**（`validation → dao`） |
-| **被 memory / jdbc 双后端各实现一遍的业务规则** | **21**（含 `transferFunds`、`storeTransaction`） |
-| public API 面积 | 58 类型 / 242 方法 |
-
-第三条是本实验的核心：**A 上加一条业务规则（如转账限额）要改两处**；B 若把规则收敛到单一处，只需改一处。
-
----
-
-## 复现
+本机 `.env` 已创建，填写 `LLM_BASE_URL`、`LLM_MODEL`、`LLM_API_KEY`；默认使用兼容 OpenAI 的协议。
+复用本机 Pi SDK 1.2.0，无需 `npm install`。
 
 ```powershell
-# 构建并跑全部测试（无 Docker、无外部服务）
-cd projectA
-& 'D:\Tools\apache-maven-3.9.14\bin\mvn.cmd' -B test
-
-# 架构指标基线
-python tools\structure.py projectA --json docs\baseline-structure.json
+npm run agent:check
+npm run agent:smoke
+npm run agent -- --benchmark bookkeeping --mode inspect
 ```
+
+每次运行都复制独立工作区，日志和产物写入 `results/<run-id>/`。详细参数见 [运行说明](docs/agent-runtime.md)。
+
+## 两个案例
+
+| 案例 | 上游与固定版本 | 变更观察重点 | 基线验证记录 |
+|---|---|---|---|
+| Bookkeeping | [double-entry-bookkeeping-api](https://github.com/imetaxas/double-entry-bookkeeping-api)，`0235352` | 业务服务与存储适配 | 182 个测试通过 |
+| cron-utils | [cron-utils](https://github.com/jmrozanec/cron-utils)，9.2.1，`a3d31f7` | 解析、求值与描述 | 固定日期夹具后 667 个通过、51 个上游已有跳过 |
+
+## 实验流程
+
+对每个案例独立执行：
+
+1. 固定原版 A、需求集、验收测试和运行环境。
+2. 优化 A 得到 B，记录改造成本，验证既有行为与 API 兼容性。
+3. 同一 Agent 在 A、B 两组分别实现相同的累积需求。
+4. 比较逐轮变更影响面、实现成本、正确性与结构指标，再分析跨案例结果。
+
+## 常用命令
+
+以下命令从仓库根目录执行。Maven 路径按本机安装位置调整。
+
+```powershell
+# 记账库结构分析（沿用现有指标口径）
+python tools/structure.py benchmarks/bookkeeping/source
+
+# 记账库基线测试
+$repoRoot = (Get-Location).Path
+& 'D:\Tools\apache-maven-3.9.14\bin\mvn.cmd' -B `
+    -f benchmarks/bookkeeping/source/pom.xml `
+    "-Dmaven.repo.local=$repoRoot/.cache/maven" test
+
+# cron-utils 基线测试：source/ 已包含固定日期夹具
+& 'D:\Tools\apache-maven-3.9.14\bin\mvn.cmd' -B `
+    -f benchmarks/cron-utils/source/pom.xml `
+    "-Dmaven.repo.local=$repoRoot/.cache/maven" '-Djacoco.skip=true' test
+```
+
+`tools/screen_candidates.py`、`score_local.py`、`test_candidates.py` 用于候选筛选；
+`vendor_upstream.py` 用于重新固化记账库；`probe_llm.py` 会调用配置中的模型端点。

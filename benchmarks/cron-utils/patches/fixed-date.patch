@@ -1,0 +1,40 @@
+diff --git a/src/test/java/com/cronutils/converter/CronConverterTest.java b/src/test/java/com/cronutils/converter/CronConverterTest.java
+index 364dc6d..cb9605d 100644
+--- a/src/test/java/com/cronutils/converter/CronConverterTest.java
++++ b/src/test/java/com/cronutils/converter/CronConverterTest.java
+@@ -18,10 +18,17 @@ import org.junit.jupiter.params.provider.Arguments;
+ import org.junit.jupiter.params.provider.MethodSource;
+ 
+ import java.time.ZoneId;
++import java.util.Calendar;
++import java.util.GregorianCalendar;
++import java.util.TimeZone;
+ import java.util.stream.Stream;
++import org.mockito.MockedStatic;
+ 
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.mockito.Mockito.spy;
++import static org.mockito.Mockito.mockStatic;
++import static org.mockito.Mockito.CALLS_REAL_METHODS;
++import static org.mockito.ArgumentMatchers.any;
+ 
+ public class CronConverterTest {
+ 	private CronConverter cronConverter = spy(new CronConverter(
+@@ -48,9 +55,17 @@ public class CronConverterTest {
+ 	@ParameterizedTest
+ 	@MethodSource("cronExpressions")
+ 	public void testCronConverterBuilder(String timezone, String inputCronExpression, String expectedCronExpression) {
++		try (MockedStatic<Calendar> calendars = mockStatic(Calendar.class, CALLS_REAL_METHODS)) {
++			calendars.when(() -> Calendar.getInstance(any(TimeZone.class))).thenAnswer(invocation -> {
++				Calendar calendar = new GregorianCalendar(invocation.getArgument(0, TimeZone.class));
++				calendar.clear();
++				calendar.set(2020, Calendar.JULY, 1, 12, 0, 0);
++				return calendar;
++			});
+ 		assertEquals(expectedCronExpression,
+ 				cronConverter.using(inputCronExpression)
+ 						.from(ZoneId.of(timezone)).to(ZoneId.of("UTC"))
+ 						.convert());
++		}
+ 	}
+ }

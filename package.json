@@ -1,0 +1,12 @@
+{
+  "name": "modi-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "agent": "node --env-file=.env bench/run.mjs",
+    "agent:check": "node --env-file=.env agent/check.mjs",
+    "agent:smoke": "node --env-file=.env --test test/agent.test.mjs"
+  }
+}

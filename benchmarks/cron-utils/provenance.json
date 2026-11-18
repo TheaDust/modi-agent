@@ -1,0 +1,21 @@
+{
+  "repo": "https://github.com/jmrozanec/cron-utils",
+  "sha": "a3d31f7445376b19d1337c604d3d3b7e986302cc",
+  "version": "9.2.1",
+  "license": "Apache-2.0",
+  "source": "source",
+  "patches": [
+    "patches/fixed-date.patch"
+  ],
+  "patches_applied": true,
+  "test_parameters": [
+    "-Djacoco.skip=true"
+  ],
+  "baseline_tests": {
+    "total": 718,
+    "passed": 667,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 51
+  }
+}
