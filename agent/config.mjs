@@ -16,11 +16,16 @@ export function readConfig(env = process.env, { requireModel = true } = {}) {
     if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`${key} 必须为正整数`);
     return value;
   };
+  const nonNegativeNumber = (key, fallback) => {
+    const value = Number(env[key] ?? fallback);
+    if (!Number.isFinite(value) || value < 0) throw new Error(`${key} 必须为非负数`);
+    return value;
+  };
   const api = env.LLM_API || 'openai-completions';
   if (!['openai-completions', 'anthropic-messages', 'openai-responses'].includes(api)) {
     throw new Error('LLM_API 必须为 openai-completions、anthropic-messages 或 openai-responses');
   }
-  const thinkingLevel = env.LLM_THINKING_LEVEL || 'off';
+  const thinkingLevel = env.LLM_THINKING_LEVEL || 'medium';
   if (!['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'].includes(thinkingLevel)) {
     throw new Error('LLM_THINKING_LEVEL 不合法');
   }
@@ -28,18 +33,26 @@ export function readConfig(env = process.env, { requireModel = true } = {}) {
   if (!Number.isFinite(temperature) || temperature < 0 || temperature > 2) {
     throw new Error('LLM_TEMPERATURE 必须在 0–2 之间');
   }
+  const inputPrice = nonNegativeNumber('MODEL_COST_INPUT', 0.15);
+  const pricing = {
+    unitTokens: 1_000_000,
+    currency: 'USD',
+    input: inputPrice,
+    output: nonNegativeNumber('MODEL_COST_OUTPUT', 0.6),
+    cacheRead: nonNegativeNumber('MODEL_COST_CACHE_READ', 0.003),
+    cacheWrite: nonNegativeNumber('MODEL_COST_CACHE_WRITE', inputPrice),
+  };
   const config = {
     sdkPath: resolve(ROOT, required('PI_SDK_PATH')),
     api,
     baseUrl: requireModel ? required('LLM_BASE_URL') : env.LLM_BASE_URL?.trim(),
     model: requireModel ? required('LLM_MODEL') : env.LLM_MODEL?.trim(),
     apiKey: requireModel ? required('LLM_API_KEY') : env.LLM_API_KEY?.trim(),
-    contextWindow: positiveInteger('LLM_CONTEXT_WINDOW', 128000),
-    maxOutputTokens: positiveInteger('LLM_MAX_OUTPUT_TOKENS', 8192),
+    contextWindow: positiveInteger('LLM_CONTEXT_WINDOW', 512000),
+    maxOutputTokens: positiveInteger('LLM_MAX_OUTPUT_TOKENS', 32768),
     temperature,
     thinkingLevel,
-    maxRequests: positiveInteger('AGENT_MAX_REQUESTS', 40),
-    timeoutSeconds: positiveInteger('AGENT_TIMEOUT_SECONDS', 1800),
+    pricing,
   };
   if (config.maxOutputTokens >= config.contextWindow) {
     throw new Error('LLM_MAX_OUTPUT_TOKENS 必须小于 LLM_CONTEXT_WINDOW');

@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -12,7 +13,7 @@ import { agentSpec, prepareRun, manifest } from '../bench/run.mjs';
 const sdkPath = process.env.PI_SDK_PATH;
 const key = 'local-smoke-secret-not-a-real-key';
 
-async function fixture(t, handler, overrides = {}) {
+async function fixture(t, handler) {
   await mkdir(join(ROOT, '.cache'), { recursive: true });
   const dir = await mkdtemp(join(ROOT, '.cache', 'agent-smoke-'));
   const cwd = join(dir, 'workspace');
@@ -39,7 +40,6 @@ async function fixture(t, handler, overrides = {}) {
     PI_SDK_PATH: sdkPath, LLM_API: 'openai-completions',
     LLM_BASE_URL: `http://127.0.0.1:${server.address().port}/v1`,
     LLM_MODEL: 'local-smoke-model', LLM_API_KEY: key,
-    AGENT_MAX_REQUESTS: '6', AGENT_TIMEOUT_SECONDS: '30', ...overrides,
   });
   const outputDir = join(dir, 'output');
   const run = (mode = 'feature') => runAgent({ config, cwd, outputDir, mode,
@@ -81,20 +81,18 @@ test('SDK calls a local endpoint, reads and writes files, and records usage', as
   assert.equal(result.toolErrors, 0);
   assert.ok(result.usage.totalTokens > 0);
   assert.equal(result.correctness, 'not_evaluated');
-  assert.equal(result.monetaryCost, null);
+  assert.equal(result.cost.currency, 'USD');
+  assert.equal(result.cost.input, 0.0000075);
+  assert.equal(result.cost.output, 0.000015);
+  assert.equal(result.cost.total, 0.0000225);
   assert.equal(await readFile(join(f.cwd, 'output.txt'), 'utf8'), 'SDK coding tools work\n');
   assert.ok(f.bodies.every((body) => body.temperature === 0));
-  assert.ok(f.bodies.every((body) => (body.max_tokens ?? body.max_completion_tokens) === 8192));
+  assert.ok(f.bodies.every((body) => (body.max_tokens ?? body.max_completion_tokens) === 32768));
+  // 思考档位必须真的作为 reasoning_effort 发给服务商，否则档位不受控。
+  assert.ok(f.bodies.every((body) => body.reasoning_effort === 'medium'));
   for (const file of ['config.json', 'events.jsonl', 'answer.md', 'summary.json']) {
     assert.ok(!(await readFile(join(f.outputDir, file), 'utf8')).includes(key), file);
   }
-});
-
-test('request limit stops further model calls', async (t) => {
-  const f = await fixture(t, (response) => sse(response, { name: 'read', args: { path: 'input.txt' } }), { AGENT_MAX_REQUESTS: '1' });
-  const result = await f.run();
-  assert.equal(result.status, 'request_limit', JSON.stringify(result));
-  assert.equal(f.bodies.length, 1);
 });
 
 test('provider error is a failed run and is not retried', async (t) => {
@@ -102,13 +100,6 @@ test('provider error is a failed run and is not retried', async (t) => {
   const result = await f.run();
   assert.equal(result.status, 'failed', JSON.stringify(result));
   assert.equal(f.bodies.length, 1);
-});
-
-test('timeout aborts an outstanding model request', async (t) => {
-  const f = await fixture(t, () => {}, { AGENT_TIMEOUT_SECONDS: '1' });
-  const result = await f.run();
-  assert.equal(result.status, 'timeout', JSON.stringify(result));
-  assert.ok(result.wallTimeSeconds < 10);
 });
 
 test('inspect mode is read-only and blocks files outside its working copy', async (t) => {
@@ -134,17 +125,25 @@ test('experiment runner copies sources and only extracts the agent-facing requir
   assert.ok(!prompt.includes('预期架构敏感点'));
   const source = join(ROOT, 'benchmarks/cron-utils/source');
   const before = await manifest(source);
-  const run = await prepareRun({ benchmark: 'cron-utils', mode: 'inspect', prompt });
+  const systemPrompt = 'Use only the supplied files.';
+  const run = await prepareRun({ benchmark: 'cron-utils', mode: 'inspect', prompt, systemPrompt });
   assert.deepEqual(run.before, before);
+  const record = JSON.parse(await readFile(join(run.outputDir, 'run.json'), 'utf8'));
+  assert.equal(record.systemPromptSha256, createHash('sha256').update(systemPrompt).digest('hex'));
+  assert.equal(record.promptSha256, createHash('sha256').update(prompt).digest('hex'));
   await writeFile(join(run.cwd, 'smoke-only.txt'), 'working copy');
   assert.deepEqual(await manifest(source), before);
 });
 
-test('configuration validates budgets and excludes the API key from metadata', () => {
+test('configuration validates options and excludes the API key from metadata', () => {
   const env = { PI_SDK_PATH: sdkPath, LLM_API_KEY: key, LLM_BASE_URL: 'http://localhost:1234/v1', LLM_MODEL: 'smoke' };
   assert.ok(!JSON.stringify(publicConfig(readConfig(env))).includes(key));
-  assert.throws(() => readConfig({ ...env, AGENT_MAX_REQUESTS: '0' }), /AGENT_MAX_REQUESTS/);
+  assert.throws(() => readConfig({ ...env, LLM_MAX_OUTPUT_TOKENS: '0' }), /LLM_MAX_OUTPUT_TOKENS/);
   assert.throws(() => readConfig({ ...env, LLM_API_KEY: '' }), /LLM_API_KEY/);
+  assert.throws(() => readConfig({ ...env, MODEL_COST_INPUT: '-1' }), /MODEL_COST_INPUT/);
+  assert.deepEqual(readConfig(env).pricing, {
+    unitTokens: 1_000_000, currency: 'USD', input: 0.15, output: 0.6, cacheRead: 0.003, cacheWrite: 0.15,
+  });
   assert.throws(() => agentSpec('plain text'), /给智能体的需求/);
 });
 
@@ -155,7 +154,7 @@ test('CLI runs an experiment against the SDK endpoint and writes final artifacts
   });
   const child = spawn(process.execPath, [join(ROOT, 'bench/run.mjs'), '--mode', 'feature', '--from', f.cwd, '--prompt', 'Write output.txt.'], {
     cwd: ROOT, env: { ...process.env, PI_SDK_PATH: sdkPath, LLM_API: f.config.api, LLM_BASE_URL: f.config.baseUrl,
-      LLM_MODEL: f.config.model, LLM_API_KEY: key, AGENT_TIMEOUT_SECONDS: '30', AGENT_MAX_REQUESTS: '4' },
+      LLM_MODEL: f.config.model, LLM_API_KEY: key },
     windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
   });
   let stdout = ''; let stderr = '';
@@ -169,7 +168,32 @@ test('CLI runs an experiment against the SDK endpoint and writes final artifacts
   const changes = JSON.parse(await readFile(join(outputDir, 'changes.json'), 'utf8'));
   assert.equal(summary.status, 'completed');
   assert.equal(summary.requests, 2);
+  assert.match(stdout, /Tokens: input 20, output 10, cache read 0, cache write 0, total 30/);
+  assert.match(stdout, /cost: \$0\.000009/);
   assert.deepEqual(changes.files, ['output.txt']);
+  const diff = JSON.parse(await readFile(join(outputDir, 'diff.json'), 'utf8'));
+  assert.equal(diff.filesChanged, 1);
+  assert.equal(diff.linesAdded, 1);
   assert.equal(await readFile(join(outputDir, 'workspace/output.txt'), 'utf8'), 'CLI works\n');
   assert.deepEqual(Object.keys(await manifest(f.cwd)), ['input.txt']);
+});
+
+test('CLI uses the built-in optimize task when none is given', async (t) => {
+  const f = await fixture(t, (response) => sse(response));
+  const child = spawn(process.execPath, [join(ROOT, 'bench/run.mjs'), '--mode', 'optimize', '--from', f.cwd], {
+    cwd: ROOT, env: { ...process.env, PI_SDK_PATH: sdkPath, LLM_API: f.config.api, LLM_BASE_URL: f.config.baseUrl,
+      LLM_MODEL: f.config.model, LLM_API_KEY: key },
+    windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let stdout = ''; let stderr = '';
+  child.stdout.on('data', (chunk) => { stdout += chunk; });
+  child.stderr.on('data', (chunk) => { stderr += chunk; });
+  const [exitCode] = await once(child, 'close');
+  assert.equal(exitCode, 0, stdout + stderr);
+  const outputDir = stdout.match(/^Run: (.+)$/m)?.[1].trim();
+  assert.ok(outputDir, stdout);
+  const summary = JSON.parse(await readFile(join(outputDir, 'summary.json'), 'utf8'));
+  assert.equal(summary.status, 'completed');
+  assert.equal(summary.mode, 'optimize');
+  assert.match(await readFile(join(outputDir, 'prompt.md'), 'utf8'), /变更传播路径/);
 });

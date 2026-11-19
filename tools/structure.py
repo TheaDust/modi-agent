@@ -171,7 +171,7 @@ def methods_of(src):
             i += 1
         body = clean[start:i + 1]
         toks = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", body)
-        out.append({"name": name, "params": params, "tokens": toks,
+        out.append({"name": name, "params": params, "tokens": toks, "body": body,
                     "loc": body.count("\n") + 1})
     return out
 
@@ -183,7 +183,7 @@ def duplication(files, min_tokens=12, include_tests=False):
     """
     by_mod = defaultdict(dict)
     for rel, f in files.items():
-        if not include_tests and "/src/test/" in rel:
+        if not include_tests and "/src/test/" in ("/" + rel):
             continue
         for m in methods_of(f["src"]):
             if len(m["tokens"]) < min_tokens:
@@ -223,6 +223,30 @@ def duplication(files, min_tokens=12, include_tests=False):
 # ------------------------------------------------- 多后端业务规则（可修改性成本驱动）
 
 BACKEND_MARKERS = ("memory", "jdbc")
+TRIVIAL_TOKEN_COUNT = 12
+DELEGATE_STMT_RE = re.compile(
+    r"^(?:return\s+)?(?:super|delegate|shared|base)\.\w+\s*\(.*\)$", re.S)
+CONTROL_WORDS = {"if", "for", "while", "switch", "try", "catch", "throw", "new", "return"}
+
+
+def is_pure_delegation(body):
+    """保守判定：方法体只由对共享抽象的调用组成。
+
+    只识别 super./delegate./shared./base. 的纯调用，且不含控制流或对象创建。
+    宁可漏判（仍计为重复），也不把真实业务规则误判为委派。
+    """
+    inner = strip_comments(body).strip()
+    if inner.startswith("{") and inner.endswith("}"):
+        inner = inner[1:-1].strip()
+    if not inner:
+        return True
+    stmts = [s.strip() for s in inner.split(";") if s.strip()]
+    if not stmts or len(stmts) > 3:
+        return False
+    toks = set(re.findall(r"[A-Za-z_]\w*", inner))
+    if toks & CONTROL_WORDS - {"return"}:
+        return False
+    return all(DELEGATE_STMT_RE.match(s) for s in stmts)
 
 
 def multi_backend_rules(files):
@@ -230,25 +254,43 @@ def multi_backend_rules(files):
 
     与 token 相似度无关：内存版用 Map、JDBC 版用 SQL，代码写法必然不同，
     但「一条规则要改两处」的成本是真实的，且两处写法不同更容易静默分叉。
+
+    raw 计数按同名方法出现在多个后端统计（保留历史口径）。
+    effective 计数排除平凡 getter 与纯委派：只有至少两个后端仍保留实质性
+    实现时才算「要改两处」。两个计数都输出，前者用于追溯，后者用于诊断；
+    二者都不单独作为 B 的验收门限。
     """
-    impl = defaultdict(lambda: defaultdict(set))   # method -> backend -> {file}
+    impl = defaultdict(lambda: defaultdict(list))   # method -> backend -> [(file, method)]
     for rel, f in files.items():
-        if "/src/test/" in rel:
+        if "/src/test/" in ("/" + rel):
             continue
         parts = f["pkg"].split(".")
         backend = next((p for p in parts if p in BACKEND_MARKERS), None)
         if not backend:
             continue
         for m in methods_of(f["src"]):
-            impl[m["name"]][backend].add(rel)
+            impl[m["name"]][backend].append((rel, m))
     out = []
     for name, backends in impl.items():
-        if len(backends) >= 2:
-            out.append({
-                "method": name,
-                "backends": {b: sorted(v) for b, v in backends.items()},
-                "backend_count": len(backends),
-            })
+        if len(backends) < 2:
+            continue
+        active = []
+        delegating = []
+        for backend, items in sorted(backends.items()):
+            substantive = [(rel, m) for rel, m in items
+                           if len(m["tokens"]) >= TRIVIAL_TOKEN_COUNT
+                           and not is_pure_delegation(m["body"])]
+            if substantive:
+                active.append(backend)
+            delegating.append({"backend": backend, "delegating": len(items) - len(substantive)})
+        out.append({
+            "method": name,
+            "backends": {b: sorted({rel for rel, _ in items}) for b, items in backends.items()},
+            "backend_count": len(backends),
+            "active_backend_count": len(active),
+            "delegating": delegating,
+            "effective": len(active) >= 2,
+        })
     out.sort(key=lambda d: (-d["backend_count"], d["method"]))
     return out
 
@@ -276,7 +318,7 @@ def analyze(root):
     dup = duplication(files)
     mbr = multi_backend_rules(files)
     n_cls, n_meth = api_surface(files)
-    main = {r: f for r, f in files.items() if "/src/test/" not in r}
+    main = {r: f for r, f in files.items() if "/src/test/" not in ("/" + r)}
     return {
         "root": root,
         "files_total": len(files),
@@ -292,6 +334,7 @@ def analyze(root):
         "duplication_count": len(dup),
         "multi_backend_rules": mbr,
         "multi_backend_rule_count": len(mbr),
+        "effective_multi_backend_rule_count": sum(1 for d in mbr if d["effective"]),
         "public_types": n_cls,
         "public_methods": n_meth,
         "graph": {k: sorted(v) for k, v in sorted(graph.items())},
@@ -322,10 +365,12 @@ def main():
               (d["method"], d["file_a"], d["loc_a"], d["file_b"], d["loc_b"],
                d["similarity"]))
     print("public 类型 / 方法 : %d / %d" % (r["public_types"], r["public_methods"]))
-    print("多后端重复实现的业务规则 : %d" % r["multi_backend_rule_count"])
+    print("多后端重复实现的业务规则 : %d（有效 %d）" %
+          (r["multi_backend_rule_count"], r["effective_multi_backend_rule_count"]))
     for d in r["multi_backend_rules"]:
         locs = ", ".join("%s:%d处" % (b, len(fs)) for b, fs in sorted(d["backends"].items()))
-        print("    %-28s %s" % (d["method"], locs))
+        flag = "" if d["effective"] else "  [委派/平凡，不计入有效数]"
+        print("    %-28s %s%s" % (d["method"], locs, flag))
 
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:

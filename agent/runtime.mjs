@@ -10,6 +10,21 @@ export const TOOLS = {
   feature: ['read', 'grep', 'find', 'ls', 'edit', 'write', 'powershell'],
 };
 
+const roundCost = (value) => Math.round(value * 1e9) / 1e9;
+
+function calculateCost(usage, pricing) {
+  const amount = (tokens, price) => roundCost((tokens * price) / pricing.unitTokens);
+  const cost = {
+    currency: pricing.currency,
+    input: amount(usage.input, pricing.input),
+    output: amount(usage.output, pricing.output),
+    cacheRead: amount(usage.cacheRead, pricing.cacheRead),
+    cacheWrite: amount(usage.cacheWrite, pricing.cacheWrite),
+  };
+  cost.total = roundCost(cost.input + cost.output + cost.cacheRead + cost.cacheWrite);
+  return cost;
+}
+
 async function isWorkspacePath(cwd, input) {
   const root = await realpath(cwd);
   let target = resolve(cwd, input);
@@ -38,7 +53,6 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
   const startedAt = new Date().toISOString();
   const started = performance.now();
   let session;
-  let timer;
   let termination;
   let failure;
   let requests = 0;
@@ -62,7 +76,11 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
       api: config.api, baseUrl: config.baseUrl,
       models: [{
         id: config.model, name: config.model, api: config.api,
-        reasoning: config.thinkingLevel !== 'off', input: ['text'],
+        // 必须声明 reasoning: true，SDK 才会把思考档位作为 reasoning_effort 发给服务商；
+        // 声明为 false 时 SDK 一个参数都不发，网关按自己的默认值思考，档位实际不受控。
+        reasoning: true, input: ['text'],
+        // 网关用 none 表示关闭思考；其余档位原样透传，避免 SDK 折叠掉配置允许的档位。
+        thinkingLevelMap: { off: 'none', xhigh: 'xhigh', max: 'max' },
         contextWindow: config.contextWindow, maxTokens: config.maxOutputTokens,
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
       }],
@@ -92,10 +110,6 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
     session.agent.toolExecution = 'sequential';
     const stream = session.agent.streamFunction;
     session.agent.streamFunction = (model, context, options) => {
-      if (requests >= config.maxRequests) {
-        termination = 'request_limit';
-        throw new Error(`Model request limit reached (${config.maxRequests})`);
-      }
       requests++;
       record({ type: 'model_request', request: requests });
       return stream(model, context, { ...options, temperature: config.temperature, maxTokens: config.maxOutputTokens });
@@ -123,9 +137,6 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
       }
     });
     process.once('SIGINT', interrupt);
-    const remainingMs = config.timeoutSeconds * 1000 - (performance.now() - started);
-    if (remainingMs <= 0) throw new Error('Agent setup exceeded the run timeout');
-    timer = setTimeout(() => { termination = 'timeout'; session.agent.abort(); }, remainingMs);
     await session.prompt(prompt, { expandPromptTemplates: false });
     if (['error', 'aborted', 'length'].includes(finalMessage?.stopReason)) {
       failure = finalMessage.errorMessage || `Model stopped: ${finalMessage.stopReason}`;
@@ -134,7 +145,6 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
   } catch (error) {
     failure = error.message;
   } finally {
-    clearTimeout(timer);
     process.removeListener('SIGINT', interrupt);
     session?.dispose();
   }
@@ -144,7 +154,7 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
     status: termination || (failure ? 'failed' : 'completed'),
     startedAt, finishedAt: new Date().toISOString(), wallTimeSeconds: (performance.now() - started) / 1000,
     model: config.model, api: config.api, mode, requests, toolCalls, toolErrors, usage,
-    monetaryCost: null, correctness: 'not_evaluated',
+    cost: calculateCost(usage, config.pricing), correctness: 'not_evaluated',
     error: failure ? redact(failure) : null,
   };
   await saveJson('summary.json', summary);

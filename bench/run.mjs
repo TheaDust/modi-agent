@@ -1,10 +1,18 @@
 import { parseArgs } from 'node:util';
+import { spawn } from 'node:child_process';
 import { readFile, writeFile, mkdir, cp, readdir, stat } from 'node:fs/promises';
 import { resolve, join, relative, basename } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { readConfig, ROOT } from '../agent/config.mjs';
 import { runAgent, TOOLS } from '../agent/runtime.mjs';
+import { initBaseline, stageChanges, lineDiff } from './diff.mjs';
+import { verify } from './verify.mjs';
+
+export const DEFAULT_TASKS = {
+  inspect: '检查 pom.xml 和源码目录，说明主要组件及其依赖关系，并引用相关文件路径。',
+  optimize: '在不改变现有行为、公共 API 和现有测试的前提下，检查该项目的变更传播路径，实施能降低后续需求实现成本的架构优化，并报告改动依据与验证结果。',
+};
 
 export function agentSpec(markdown) {
   const match = markdown.match(/^## 给智能体的需求\s*\r?\n([\s\S]*?)(?=^## |$(?![\s\S]))/m);
@@ -26,7 +34,28 @@ export async function manifest(directory) {
   return files;
 }
 
-export async function prepareRun({ benchmark, from, mode, prompt }) {
+function runGuard({ cwd, mode, outputDir, env }) {
+  return new Promise((done) => {
+    const child = spawn(env.PYTHON || 'python', [
+      join(ROOT, 'bench', 'guard.py'), cwd, '--mode', mode,
+      '--json', join(outputDir, 'guard.json'),
+    ], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = ''; let stderr = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', (error) => done({ status: 'skipped', reason: error.message, valid: true }));
+    child.on('close', (code) => {
+      if (code === 1) done({ status: 'error', reason: stderr.trim(), valid: true });
+      else done({ status: code === 2 ? 'invalid' : 'ok', valid: code !== 2, stdout: stdout.trim() });
+    });
+  });
+}
+
+async function hasPom(cwd) {
+  try { return (await stat(join(cwd, 'pom.xml'))).isFile(); } catch { return false; }
+}
+
+export async function prepareRun({ benchmark, from, mode, prompt, systemPrompt }) {
   if (!['bookkeeping', 'cron-utils'].includes(benchmark)) throw new Error('benchmark 必须为 bookkeeping 或 cron-utils');
   if (!TOOLS[mode]) throw new Error('mode 必须为 inspect、optimize 或 feature');
   const source = from ? resolve(ROOT, from) : join(ROOT, 'benchmarks', benchmark, 'source');
@@ -39,11 +68,18 @@ export async function prepareRun({ benchmark, from, mode, prompt }) {
     recursive: true,
     filter: (path) => !['.git', 'target', 'node_modules'].includes(basename(path)),
   });
+  if (mode === 'optimize') {
+    await mkdir(join(cwd, '_tools'), { recursive: true });
+    await cp(join(ROOT, 'tools', 'structure.py'), join(cwd, '_tools', 'structure.py'));
+  }
+  const baseline = await initBaseline(cwd);
   const before = await manifest(cwd);
   const provenance = JSON.parse(await readFile(join(ROOT, 'benchmarks', benchmark, 'provenance.json'), 'utf8'));
-  await writeFile(join(outputDir, 'run.json'), JSON.stringify({ id, benchmark, mode, source, provenance, promptSha256: createHash('sha256').update(prompt).digest('hex') }, null, 2) + '\n');
+  const runRecord = { id, benchmark, mode, source, provenance, baseline, promptSha256: createHash('sha256').update(prompt).digest('hex') };
+  if (systemPrompt !== undefined) runRecord.systemPromptSha256 = createHash('sha256').update(systemPrompt).digest('hex');
+  await writeFile(join(outputDir, 'run.json'), JSON.stringify(runRecord, null, 2) + '\n');
   await writeFile(join(outputDir, 'before.json'), JSON.stringify(before, null, 2) + '\n');
-  return { id, outputDir, cwd, before };
+  return { id, outputDir, cwd, before, baseline };
 }
 
 export async function main(args = process.argv.slice(2)) {
@@ -55,6 +91,7 @@ export async function main(args = process.argv.slice(2)) {
   } });
   if (values.help) {
     console.log('npm run agent -- --benchmark bookkeeping|cron-utils --mode inspect|optimize|feature [--prompt TEXT | --prompt-file FILE | --requirement R1] [--from SOURCE_DIR]');
+    console.log('inspect/optimize 省略任务时使用固定默认任务；feature 必须提供 --requirement 或任务文本。');
     return;
   }
   const config = readConfig();
@@ -68,18 +105,43 @@ export async function main(args = process.argv.slice(2)) {
     if (values.mode !== 'feature' || !/^R[1-5]$/.test(values.requirement)) throw new Error('--requirement 仅用于 feature 模式，取值 R1–R5');
     prompt = agentSpec(await readFile(join(ROOT, 'benchmarks', values.benchmark, 'requirements', `${values.requirement}.md`), 'utf8'));
   }
-  prompt ??= values.mode === 'inspect' ? '检查 pom.xml 和源码目录，说明主要组件及其依赖关系，并引用相关文件路径。' : undefined;
-  if (!prompt?.trim()) throw new Error('optimize/feature 模式需要明确的任务文本');
-  const run = await prepareRun({ benchmark: values.benchmark, from: values.from, mode: values.mode, prompt });
-  console.log(`Run: ${run.outputDir}`);
+  prompt ??= DEFAULT_TASKS[values.mode];
+  if (!prompt?.trim()) throw new Error('feature 模式需要明确的需求或任务文本');
   const systemPrompt = await readFile(join(ROOT, 'prompts', `${values.mode}.md`), 'utf8');
+  const run = await prepareRun({ benchmark: values.benchmark, from: values.from, mode: values.mode, prompt, systemPrompt });
+  console.log(`Run: ${run.outputDir}`);
   const summary = await runAgent({ config, ...run, mode: values.mode, prompt, systemPrompt, onText: (text) => process.stdout.write(text) });
   const after = await manifest(run.cwd);
   const changed = [...new Set([...Object.keys(run.before), ...Object.keys(after)])].filter((path) => run.before[path] !== after[path]);
   await writeFile(join(run.outputDir, 'changes.json'), JSON.stringify({ filesChanged: changed.length, files: changed, after }, null, 2) + '\n');
+
+  // 行级 diff 是 H1 变更规模的来源；基线提交在 Agent 运行前已写入 run.json。
+  if (run.baseline?.status === 'ready') {
+    try {
+      await stageChanges(run.cwd, changed);
+      const diff = await lineDiff(run.cwd);
+      await writeFile(join(run.outputDir, 'diff.json'), JSON.stringify(diff, null, 2) + '\n');
+    } catch (error) {
+      await writeFile(join(run.outputDir, 'diff.json'), JSON.stringify({ status: 'unavailable', reason: error.message }, null, 2) + '\n');
+    }
+  }
+
+  let guardResult = null;
+  let verification = null;
+  if (summary.status === 'completed' && await hasPom(run.cwd)) {
+    guardResult = await runGuard({ cwd: run.cwd, mode: values.mode, outputDir: run.outputDir, env: process.env });
+    verification = await verify({ cwd: run.cwd, outputDir: run.outputDir, benchmark: values.benchmark });
+  }
+
+  const { input, output, cacheRead, cacheWrite, totalTokens } = summary.usage;
   console.log(`\nStatus: ${summary.status}; requests: ${summary.requests}; tools: ${summary.toolCalls}; changed files: ${changed.length}`);
+  console.log(`Tokens: input ${input}, output ${output}, cache read ${cacheRead}, cache write ${cacheWrite}, total ${totalTokens}`);
+  console.log(`Time: ${summary.wallTimeSeconds.toFixed(2)}s; cost: $${summary.cost.total.toFixed(6)}`);
+  if (guardResult) console.log(`Guard: ${guardResult.status}${guardResult.stdout ? ` — ${guardResult.stdout}` : ''}`);
+  if (verification) console.log(`Verification: ${verification.status}${verification.reason ? ` — ${verification.reason}` : ''}`);
   if (summary.error) console.error(summary.error);
   if (summary.status !== 'completed') process.exitCode = 1;
+  if (guardResult && !guardResult.valid) process.exitCode = 2;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

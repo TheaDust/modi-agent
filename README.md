@@ -47,7 +47,7 @@ modi-agent/
 
 每个基准项目 的源码、需求和证据放在同一目录。A/B 表示同一案例的原版与优化版，不用于区分两个案例。
 
-单轮 Agent 已实现；多次配对实验、独立验收与反作弊守卫后续在 `bench/` 中实现。
+单轮 Agent 已实现，并附带行级 diff、反作弊守卫与独立测试验收；多次配对实验与跨轮统计后续在 `bench/` 中实现。
 
 ## 启动 Agent
 
@@ -64,10 +64,10 @@ npm run agent -- --benchmark bookkeeping --mode inspect
 
 ## 两个案例
 
-| 案例 | 上游与固定版本 | 变更观察重点 | 基线验证记录 |
-|---|---|---|---|
-| Bookkeeping | [double-entry-bookkeeping-api](https://github.com/imetaxas/double-entry-bookkeeping-api)，`0235352` | 业务服务与存储适配 | 182 个测试通过 |
-| cron-utils | [cron-utils](https://github.com/jmrozanec/cron-utils)，9.2.1，`a3d31f7` | 解析、求值与描述 | 固定日期夹具后 667 个通过、51 个上游已有跳过 |
+| 案例        | 上游与固定版本                                                                                       | 变更观察重点       | 基线验证记录                                 |
+| ----------- | ---------------------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------- |
+| Bookkeeping | [double-entry-bookkeeping-api](https://github.com/imetaxas/double-entry-bookkeeping-api)，`0235352` | 业务服务与存储适配 | 182 个测试通过                               |
+| cron-utils  | [cron-utils](https://github.com/jmrozanec/cron-utils)，9.2.1，`a3d31f7`                             | 解析、求值与描述   | 固定日期夹具后 667 个通过、51 个上游已有跳过 |
 
 ## 实验流程
 
