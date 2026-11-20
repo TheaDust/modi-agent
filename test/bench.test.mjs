@@ -117,6 +117,25 @@ test('guard rejects removal of a public method', async (t) => {
   assert.ok(result.violations.some((item) => item.rule === 'public-api-removed'));
 });
 
+test('build artifacts and test logs are excluded from the diff metric', async (t) => {
+  const dir = await tempDir(t, 'diff-artifact-test-');
+  await writeFile(join(dir, 'a.txt'), 'one\n');
+  await mkdir(join(dir, 'target'), { recursive: true });
+  await writeFile(join(dir, 'target', 'out.txt'), 'build\n');
+  await writeFile(join(dir, 'derby.log'), 'log\n');
+  const baseline = await initBaseline(dir);
+  assert.equal(baseline.status, 'ready');
+  await writeFile(join(dir, 'derby.log'), 'log\nchanged\n');
+  await writeFile(join(dir, 'target', 'out.txt'), 'build\nchanged\n');
+  await mkdir(join(dir, '_tools', '__pycache__'), { recursive: true });
+  await writeFile(join(dir, '_tools', '__pycache__', 'x.pyc'), 'cache\n');
+  await stageChanges(dir, ['derby.log', 'target/out.txt', '_tools/__pycache__/x.pyc']);
+  const diff = await lineDiff(dir);
+  assert.equal(diff.filesChanged, 0);
+  assert.equal(diff.linesAdded, 0);
+  assert.equal(diff.linesDeleted, 0);
+});
+
 test('guard skips non-Java working copies', async (t) => {
   const dir = await tempDir(t, 'guard-skip-');
   await writeFile(join(dir, 'input.txt'), 'x');

@@ -25,17 +25,40 @@ export async function initBaseline(cwd) {
   }
 }
 
+// 构建产物、测试日志和工具缓存不是代码变更，不能计入 H1 的变更规模。
+const ARTIFACT_PATTERNS = [
+  /(^|\/)target\//,
+  /(^|\/)bin\//,
+  /(^|\/)__pycache__\//,
+  /(^|\/)node_modules\//,
+  /(^|\/)\.idea\//,
+  /(^|\/)\.vscode\//,
+  /\.log$/,
+  /\.class$/,
+  /\.jar$/,
+];
+
+export function isArtifact(path) {
+  const normalized = path.replaceAll('\\', '/');
+  return ARTIFACT_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
 // 把 Agent 的新增文件（含被 .gitignore 忽略的文件）纳入 diff。
 export async function stageChanges(cwd, changedFiles = []) {
   await git(cwd, ['add', '-A']);
   for (const file of changedFiles) {
-    if (file.startsWith('.git/') || file === '.git') continue;
+    if (file.startsWith('.git/') || file === '.git' || isArtifact(file)) continue;
     try {
       await git(cwd, ['add', '-f', '--', file]);
     } catch {
       // 删除的文件已由 git add -A 处理。
     }
   }
+  // 构建产物即使已被跟踪（如 derby.log），也要从本次 diff 中排除。
+  const staged = (await git(cwd, ['diff', '--cached', '--name-only', 'HEAD']))
+    .split(/\r?\n/).filter(Boolean);
+  const artifacts = staged.filter(isArtifact);
+  if (artifacts.length) await git(cwd, ['reset', '-q', 'HEAD', '--', ...artifacts]);
 }
 
 function parseNumstat(text) {
@@ -70,7 +93,7 @@ function parseNameStatus(text) {
 export async function lineDiff(cwd) {
   const numstat = parseNumstat(await git(cwd, ['diff', '--cached', '--numstat', 'HEAD']));
   const nameStatus = parseNameStatus(await git(cwd, ['diff', '--cached', '--name-status', 'HEAD']));
-  const paths = [...new Set([...numstat.keys(), ...nameStatus.keys()])].sort();
+  const paths = [...new Set([...numstat.keys(), ...nameStatus.keys()])].filter((path) => !isArtifact(path)).sort();
   const files = paths.map((path) => ({
     path,
     status: nameStatus.get(path)?.status ?? 'M',
