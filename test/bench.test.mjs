@@ -2,11 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, writeFile, unlink } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile, unlink, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ROOT } from '../agent/config.mjs';
 import { initBaseline, stageChanges, lineDiff } from '../bench/diff.mjs';
 import { verify } from '../bench/verify.mjs';
+import { accept } from '../bench/accept.mjs';
 
 const python = process.env.PYTHON || 'python';
 
@@ -166,4 +167,42 @@ test('verification skips projects without a pom', async (t) => {
   const dir = await tempDir(t, 'verify-test-');
   const result = await verify({ cwd: dir, outputDir: dir, benchmark: 'bookkeeping' });
   assert.equal(result.status, 'skipped');
+});
+
+test('acceptance runner copies frozen tests, parses reports and cleans up', async (t) => {
+  const dir = await tempDir(t, 'accept-test-');
+  const cwd = join(dir, 'workspace');
+  const acceptanceDir = join(cwd, 'bookkeeping-core/src/test/java/com/yanimetaxas/bookkeeping/acceptance');
+  await mkdir(acceptanceDir, { recursive: true });
+  await writeFile(join(cwd, 'pom.xml'), '<project/>\n');
+
+  const fakeScript = join(dir, 'fake-maven.mjs');
+  await writeFile(fakeScript, [
+    "import { mkdir, writeFile } from 'node:fs/promises';",
+    "import { join } from 'node:path';",
+    "const dir = join(process.cwd(), 'bookkeeping-core/target/surefire-reports');",
+    "await mkdir(dir, { recursive: true });",
+    "await writeFile(join(dir, 'com.yanimetaxas.bookkeeping.acceptance.R1AcceptanceTest.txt'),",
+    "  'Tests run: 7, Failures: 0, Errors: 0, Skipped: 0\\n');",
+    "console.log('[INFO] BUILD SUCCESS');",
+  ].join('\n'));
+  const fakeMaven = join(dir, 'fake-maven.cmd');
+  await writeFile(fakeMaven, `@echo off\r\nnode "${fakeScript}" %*\r\n`);
+
+  const result = await accept({
+    cwd, outputDir: dir, benchmark: 'bookkeeping', requirements: ['R1'],
+    env: { ...process.env, MAVEN_PATH: fakeMaven },
+  });
+  assert.equal(result.status, 'passed');
+  assert.equal(result.tests, 7);
+  assert.ok(result.files.includes('R1AcceptanceTest.java'));
+  await assert.rejects(() => stat(acceptanceDir), /ENOENT/);
+});
+
+test('acceptance runner skips when no requirement or wrong benchmark', async (t) => {
+  const dir = await tempDir(t, 'accept-skip-');
+  const empty = await accept({ cwd: dir, outputDir: dir, benchmark: 'bookkeeping' });
+  assert.equal(empty.status, 'skipped');
+  const other = await accept({ cwd: dir, outputDir: dir, benchmark: 'cron-utils', requirements: ['R1'] });
+  assert.equal(other.status, 'skipped');
 });

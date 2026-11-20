@@ -105,7 +105,10 @@ PowerShell 以当前副本为工作目录，具有本机进程权限；当前实
 | `diff.json`                        | 相对基线提交的行级增删与文件状态（`git diff --numstat`）       |
 | `guard.json`                       | 事后反作弊结果；`valid=false` 表示该轮判为无效                |
 | `verification.json` / `verification.log` | 独立 `mvn test` 验收结论、用例统计与原始日志            |
+| `acceptance.json` / `acceptance.log` | 冻结验收测试结果（与实现方自写用例分开执行）                  |
 | `workspace/`                       | 本轮工作副本（运行前已 `git init` 并提交基线）                |
+
+退出码：`0` 正常，`1` Agent 未正常结束，`2` 反作弊守卫判无效，`3` 冻结验收未通过。
 
 运行状态包括 `completed`、`failed`、`interrupted`。
 `completed` 仅表示 Agent 正常结束；`summary.json` 的 `correctness` 字段仍固定为 `not_evaluated`，

@@ -13,6 +13,18 @@
 
 Agent 收到的完整内容 = 固定的系统提示词（`prompts/feature.md`）+ 当前需求的「给智能体的需求」区块。
 
+## 正式实验前的 API 可达性修订
+
+需求冻结前发现并补齐了三处「规定了 API、但调用方够不着」的缺口，以保证 A/B 两组做的是同一个契约：
+
+| 需求 | 缺口 | 修订 |
+|---|---|---|
+| R1 | `Ledger.accounts()` 是私有方法，`AccountService` 上的新成员无法从库入口调用；且 `Ledger.commit()` 按 ChartOfAccounts 校验账户引用，账户必须在建表时创建 | 规定 `Ledger.accountService()` 访问器与 `ChartOfAccountsBuilder.create(..., Money transferLimit)` 重载；冻结验收测试据此编写 |
+| R3 / R4 / R5 | 原文允许「获取方式可自行选择」，A/B 可能暴露不同名称的服务访问器，破坏 API 可比性 | 分别固定 `Ledger.reconciliationService()` / `postingHistoryService()` / `budgetService()` |
+| R4 | 未规定给操作者赋值的构建器方法名 | 规定 `TransferRequest.BuildStep.actor(String)` |
+
+这些修订只固定**对外 API 表面**，不涉及实现位置、模块归属或设计模式，不违反铁律 1。
+
 ## 三条设计铁律
 
 ### 铁律 1 · 规定对外 API，但不规定实现位置

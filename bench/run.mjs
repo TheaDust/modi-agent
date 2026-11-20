@@ -8,6 +8,7 @@ import { readConfig, ROOT } from '../agent/config.mjs';
 import { runAgent, TOOLS } from '../agent/runtime.mjs';
 import { initBaseline, stageChanges, lineDiff } from './diff.mjs';
 import { verify } from './verify.mjs';
+import { accept } from './accept.mjs';
 
 export const DEFAULT_TASKS = {
   inspect: '检查 pom.xml 和源码目录，说明主要组件及其依赖关系，并引用相关文件路径。',
@@ -128,9 +129,17 @@ export async function main(args = process.argv.slice(2)) {
 
   let guardResult = null;
   let verification = null;
+  let acceptance = null;
   if (summary.status === 'completed' && await hasPom(run.cwd)) {
     guardResult = await runGuard({ cwd: run.cwd, mode: values.mode, outputDir: run.outputDir, env: process.env });
     verification = await verify({ cwd: run.cwd, outputDir: run.outputDir, benchmark: values.benchmark });
+    if (values.mode === 'feature' && values.requirement) {
+      const index = Number(values.requirement.slice(1));
+      const requirements = Array.from({ length: index }, (_, i) => `R${i + 1}`);
+      acceptance = await accept({
+        cwd: run.cwd, outputDir: run.outputDir, benchmark: values.benchmark, requirements,
+      });
+    }
   }
 
   const { input, output, cacheRead, cacheWrite, totalTokens } = summary.usage;
@@ -139,9 +148,11 @@ export async function main(args = process.argv.slice(2)) {
   console.log(`Time: ${summary.wallTimeSeconds.toFixed(2)}s; cost: $${summary.cost.total.toFixed(6)}`);
   if (guardResult) console.log(`Guard: ${guardResult.status}${guardResult.stdout ? ` — ${guardResult.stdout}` : ''}`);
   if (verification) console.log(`Verification: ${verification.status}${verification.reason ? ` — ${verification.reason}` : ''}`);
+  if (acceptance) console.log(`Acceptance: ${acceptance.status}${acceptance.reason ? ` — ${acceptance.reason}` : ''} (${acceptance.tests ?? 0} 个冻结用例)`);
   if (summary.error) console.error(summary.error);
   if (summary.status !== 'completed') process.exitCode = 1;
   if (guardResult && !guardResult.valid) process.exitCode = 2;
+  if (acceptance && !['passed', 'skipped'].includes(acceptance.status)) process.exitCode = 3;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

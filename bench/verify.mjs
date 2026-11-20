@@ -7,7 +7,7 @@ import { ROOT } from '../agent/config.mjs';
 const TEST_SUMMARY = /Tests run:\s*(\d+),\s*Failures:\s*(\d+),\s*Errors:\s*(\d+),\s*Skipped:\s*(\d+)(?!.*Time elapsed)/g;
 
 function run(command, args, cwd) {
-  return new Promise((resolve) => {
+  return new Promise((resolvePromise) => {
     // Windows 的 .cmd/.bat 必须经 shell 启动，否则 Node 直接 spawn 会抛 EINVAL。
     const shell = /\.(cmd|bat)$/i.test(command);
     const quote = (value) => (/\s/.test(value) ? `"${value}"` : value);
@@ -18,8 +18,8 @@ function run(command, args, cwd) {
     let output = '';
     child.stdout.on('data', (chunk) => { output += chunk; });
     child.stderr.on('data', (chunk) => { output += chunk; });
-    child.on('error', (error) => resolve({ exitCode: -1, output, error: error.message }));
-    child.on('close', (exitCode) => resolve({ exitCode, output }));
+    child.on('error', (error) => resolvePromise({ exitCode: -1, output, error: error.message }));
+    child.on('close', (exitCode) => resolvePromise({ exitCode, output }));
   });
 }
 
@@ -34,27 +34,16 @@ function parseTotals(output) {
   return totals;
 }
 
-export async function verify({ cwd, outputDir, benchmark, env = process.env }) {
-  const pom = resolve(cwd, 'pom.xml');
-  try {
-    if (!(await stat(pom)).isFile()) {
-      return writeResult(outputDir, { status: 'skipped', reason: '工作副本没有 pom.xml' });
-    }
-  } catch {
-    return writeResult(outputDir, { status: 'skipped', reason: '工作副本没有 pom.xml' });
-  }
-
+export async function runMaven({ cwd, benchmark, env = process.env }) {
   const maven = env.MAVEN_PATH?.trim() || (process.platform === 'win32' ? 'mvn.cmd' : 'mvn');
   const args = [
-    '-B', '-f', pom,
+    '-B', '-f', resolve(cwd, 'pom.xml'),
     `-Dmaven.repo.local=${join(ROOT, '.cache', 'maven')}`,
     '-Dfile.encoding=UTF-8',
   ];
   if (benchmark === 'cron-utils') args.push('-Djacoco.skip=true');
   args.push('test');
-
   const { exitCode, output, error } = await run(maven, args, cwd);
-  await writeFile(join(outputDir, 'verification.log'), output + '\n');
   const totals = parseTotals(output);
   const buildSuccess = /BUILD SUCCESS/.test(output);
   const buildFailure = /BUILD FAILURE/.test(output);
@@ -62,15 +51,21 @@ export async function verify({ cwd, outputDir, benchmark, env = process.env }) {
   if (error) status = 'skipped';
   else if (buildSuccess || (exitCode === 0 && totals.tests > 0)) status = 'passed';
   else if (buildFailure || exitCode !== 0) status = 'failed';
+  return { status, reason: error || undefined, command: [maven, ...args], exitCode, buildSuccess, ...totals, output };
+}
 
-  return writeResult(outputDir, {
-    status,
-    reason: error || undefined,
-    command: [maven, ...args],
-    exitCode,
-    buildSuccess,
-    ...totals,
-  });
+export async function verify({ cwd, outputDir, benchmark, env = process.env }) {
+  try {
+    if (!(await stat(resolve(cwd, 'pom.xml'))).isFile()) {
+      return writeResult(outputDir, { status: 'skipped', reason: '工作副本没有 pom.xml' });
+    }
+  } catch {
+    return writeResult(outputDir, { status: 'skipped', reason: '工作副本没有 pom.xml' });
+  }
+  const result = await runMaven({ cwd, benchmark, env });
+  const { output, ...record } = result;
+  await writeFile(join(outputDir, 'verification.log'), output + '\n');
+  return writeResult(outputDir, record);
 }
 
 async function writeResult(outputDir, result) {
