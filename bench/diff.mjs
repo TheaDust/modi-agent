@@ -31,6 +31,8 @@ const ARTIFACT_PATTERNS = [
   /(^|\/)bin\//,
   /(^|\/)__pycache__\//,
   /(^|\/)node_modules\//,
+  // _tools/ 是运行框架注入的分析器目录，不属于基准源码的变更
+  /(^|\/)_tools\//,
   /(^|\/)\.idea\//,
   /(^|\/)\.vscode\//,
   /\.log$/,
