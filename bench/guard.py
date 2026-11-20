@@ -19,7 +19,7 @@ from difflib import unified_diff
 
 PKG_RE = re.compile(r"^[ \t]*package\s+([\w.]+)\s*;", re.M)
 TYPE_RE = re.compile(
-    r"^[ \t]*(?:(?:public|final|abstract|sealed|non-sealed)\s+)*"
+    r"^[ \t]*(?P<mods>(?:(?:public|final|abstract|sealed|non-sealed)\s+)*)"
     r"(class|interface|enum|record|@interface)\s+(\w+)(?:<[^\n{]*>)?", re.M)
 IMPORT_RE = re.compile(r"^[ \t]*import\s+(?:static\s+)?([\w.]+)(?:\.\*)?\s*;", re.M)
 PUBLIC_METHOD_RE = re.compile(
@@ -103,8 +103,18 @@ def balanced_params(src, open_index):
     return src[open_index + 1:]
 
 
+def brace_depth_at(src, index):
+    """方法声明所在的大括号深度；1 = 顶层类型的方法，>=2 为内部类的方法。"""
+    prefix = re.sub(r'"(?:\\.|[^"\\])*"', '""', src[:index])
+    return prefix.count("{") - prefix.count("}")
+
+
 def java_units(files, content_of):
-    """path -> {pkg, types:set((pkg,name)), imports:set, methods:set((sig,ret))}"""
+    """path -> {pkg, types, public_types, imports, methods, supers}。
+
+    只有 public 顶层类型及其直接声明的方法属于对外 API；
+    package-private 类型与 private 内部类的方法不计入，否则会把合法重构误判为破坏性变更。
+    """
     units = {}
     for path in files:
         if not path.endswith(".java"):
@@ -115,12 +125,19 @@ def java_units(files, content_of):
         clean = strip_comments(src)
         pkg_match = PKG_RE.search(clean)
         pkg = pkg_match.group(1) if pkg_match else ""
-        names = {m.group(2) for m in TYPE_RE.finditer(clean)}
+        type_matches = list(TYPE_RE.finditer(clean))
+        names = {m.group(3) for m in type_matches}
         types = {(pkg, name) for name in names}
+        public_types = {
+            (pkg, m.group(3)) for m in type_matches
+            if "public" in m.group("mods").split()
+        }
         imports = {m.group(1) for m in IMPORT_RE.finditer(clean)}
         parsed = re.sub(r"@\w+(?:\s*\([^)]*\))?", "", clean)
         methods = set()
         for m in PUBLIC_METHOD_RE.finditer(parsed):
+            if brace_depth_at(parsed, m.start()) != 1:
+                continue
             ret, name = m.group(1).strip(), m.group(2)
             if name in {"class", "interface", "enum", "record"} or ret in {"class", "interface", "enum", "record"}:
                 continue
@@ -131,8 +148,8 @@ def java_units(files, content_of):
         for match in re.finditer(
                 r"\b(?:extends|implements)\s+([\w.]+(?:\s*,\s*[\w.]+)*)", clean):
             supers.extend(name.strip() for name in match.group(1).split(","))
-        units[path] = {"pkg": pkg, "types": types, "imports": imports,
-                       "methods": methods, "supers": supers, "src": clean}
+        units[path] = {"pkg": pkg, "types": types, "public_types": public_types,
+                       "imports": imports, "methods": methods, "supers": supers, "src": clean}
     return units
 
 
@@ -317,10 +334,10 @@ def check(workspace, mode):
     before_api = defaultdict(set)
     after_api = defaultdict(set)
     for unit in before_main.values():
-        for type_key in unit["types"]:
+        for type_key in unit["public_types"]:
             before_api[type_key] |= unit["methods"]
     for unit in after_main.values():
-        for type_key in unit["types"]:
+        for type_key in unit["public_types"]:
             after_api[type_key] |= unit["methods"]
     before_api = effective_api(before_api, resolve_supers(before))
     after_api = effective_api(after_api, resolve_supers(after))

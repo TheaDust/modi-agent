@@ -72,7 +72,8 @@ test('guard accepts additive feature changes without false positives', async (t)
   await writeFile(join(cwd, 'src/main/java/com/example/service/NewFeature.java'),
     'package com.example.service;\npublic class NewFeature {\n  public void run() { run(); }\n}\n');
   await writeFile(join(cwd, 'src/main/java/com/example/service/AccountService.java'),
-    service.replace('}\n', '  public int count() { return 1; }\n}\n'));
+    service.replace('  public String find(String ref) { return ref; }\n',
+      '  public String find(String ref) { return ref; }\n  public int count() { return 1; }\n'));
   await writeFile(join(cwd, 'src/test/java/com/example/service/ExtraTest.java'),
     'package com.example.service;\nclass ExtraTest { void x() { assertTrue(true); } }\n');
   const result = guard(cwd, 'feature');
@@ -135,6 +136,29 @@ test('build artifacts and test logs are excluded from the diff metric', async (t
   assert.equal(diff.filesChanged, 0);
   assert.equal(diff.linesAdded, 0);
   assert.equal(diff.linesDeleted, 0);
+});
+
+test('guard ignores package-private types and nested class methods', async (t) => {
+  const dir = await tempDir(t, 'guard-visibility-');
+  const cwd = join(dir, 'workspace');
+  const base = join(cwd, 'src/main/java/p');
+  await mkdir(base, { recursive: true });
+  await writeFile(join(cwd, 'pom.xml'), '<project/>\n');
+  const outer = 'package p;\npublic class Outer {\n'
+    + '  public void keep() {}\n'
+    + '  private static final class Inner { public void nested() { helper(); } }\n}\n';
+  await writeFile(join(base, 'Outer.java'), outer);
+  await writeFile(join(base, 'Hidden.java'),
+    'package p;\nfinal class Hidden { public void gone() { doThing(); } }\n');
+  git(cwd, ['init', '-q']);
+  git(cwd, ['add', '-A']);
+  git(cwd, ['-c', 'user.name=test', '-c', 'user.email=test@local', 'commit', '-q', '-m', 'baseline']);
+
+  await writeFile(join(base, 'Outer.java'), 'package p;\npublic class Outer {\n  public void keep() {}\n}\n');
+  await unlink(join(base, 'Hidden.java'));
+  const result = guard(cwd, 'optimize');
+  assert.equal(result.valid, true, JSON.stringify(result));
+  assert.equal(result.api.removedMethods, 0);
 });
 
 test('guard skips non-Java working copies', async (t) => {
