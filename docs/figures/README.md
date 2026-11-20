@@ -10,6 +10,21 @@
 | `*.drawio.png` / `*.drawio.svg` | 由上面的 `.drawio` 导出（PNG 为 2 倍分辨率，SVG 为矢量） |
 
 三张图共用一套视觉语言：白底、深灰标题、浅色底 + 细描边的方块、统一的圆角与字号。
+
+## 术语
+
+图上出现的名词一律用代码里的真实单位，两张架构图用词完全一致：
+
+| 图上写法 | 指代 | 代码位置 |
+|---|---|---|
+| `memory 包` / `jdbc 包` | 两个存储后端所在的包（架构 A 里规则和存储实现混在同一个包里） | `com.yanimetaxas.bookkeeping.memory` / `.jdbc` |
+| `service 包` | 业务层所在包 | `com.yanimetaxas.bookkeeping.service` |
+| 转账规则 / 账户规则 / 会话前导 | 三条业务规则 | 架构 B 中为 `AbstractTransferService` / `AccountServiceImpl` / `AbstractStorageProvider` |
+| 端口（`AccountStore` / `TransferStore`） | 业务层自己定义的窄接口 | `service` 包 |
+| 存储实现 | 后端里的读写原语 | `InMemory*Dao` / `Jdbc*Repository` |
+| `dao 接口` | 保持不变的持久化接口 | `AccountDao` / `TransactionDao` / `ClientDao` |
+| `Ledger` | 对外入口门面 | `com.yanimetaxas.bookkeeping.Ledger` |
+
 方块颜色只用来区分**角色**，不表示好坏：
 
 | 颜色 | 含义 |
@@ -17,7 +32,7 @@
 | 琥珀 | 业务规则（架构 A 中同一规则有两份，用虚线相连） |
 | 青绿 | 业务规则（架构 B 中唯一一份） |
 | 蓝 | 端口（由业务层定义、后端反向实现） |
-| 灰 | 存储实现 / 后端适配 / dao 接口 |
+| 灰 | 存储实现 / 后端包 / dao 接口 |
 | 白 + 深描边 | 对外入口 `Ledger` |
 
 ## 图 1a / 1b：架构对比
@@ -27,8 +42,9 @@
 - **图 1a**：规则写在后端包里。`memory 包` 与 `jdbc 包` 两列并排，各写了一份
   `转账规则 / 账户规则 / 会话前导`，同名规则之间用虚线连起来 —— 一眼看出「同一条规则写了两遍」；
   两列下方各有一份「存储实现」，说明规则与存储实现混在同一层。
-- **图 1b**：规则提到业务层，只有一份；业务层向下依赖自己定义的窄端口
-  `AccountStore` / `TransferStore`；两个后端用**向上的蓝色箭头**实现端口 —— 依赖倒置就画在这两支反向箭头上。
+- **图 1b**：规则提到 `service` 包，只有一份；业务层向下依赖自己定义的窄端口
+  `AccountStore` / `TransferStore`；`memory 包` 与 `jdbc 包` 用**向上的蓝色箭头**实现端口 ——
+  依赖倒置就画在这两支反向箭头上。
 
 图中结构与包名均取自真实代码，不是示意性命名。
 

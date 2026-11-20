@@ -25,7 +25,7 @@
 <mxCell id="c19" value="dao 接口：AccountDao / TransactionDao / ClientDao" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1F5F9;strokeColor=#A3B0C0;strokeWidth=1.2;fontSize=14;fontColor=#334155;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="496" width="600" height="48" as="geometry" /></mxCell>
 <mxCell id="e20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9AA5B4;strokeWidth=1.6;endArrow=block;endFill=1;endSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.1167;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c12" target="c19"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
 <mxCell id="e21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9AA5B4;strokeWidth=1.6;endArrow=block;endFill=1;endSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.8167;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c13" target="c19"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="c22" value="同一条业务规则，两处实现 —— 改一处很容易漏掉另一处&#10;新增一个存储后端，这三条规则都要重新写一遍" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=13;fontColor=#6B7280;" vertex="1" parent="1"><mxGeometry x="60" y="572" width="780" height="48" as="geometry" /></mxCell>
+<mxCell id="c22" value="同一条业务规则，两处实现 —— 改一处很容易漏掉另一处&#10;新增一个后端包，这三条规则都要重新写一遍" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=13;fontColor=#6B7280;" vertex="1" parent="1"><mxGeometry x="60" y="572" width="780" height="48" as="geometry" /></mxCell>
       </root>
     </mxGraphModel>
   </diagram>
