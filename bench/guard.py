@@ -328,8 +328,15 @@ def check(workspace, mode):
 
     new_deps = new_layer_dependencies(before_main, after_main)
     for pkg, imp in new_deps:
-        violations.append({"rule": "new-layer-dependency", "file": pkg,
-                           "detail": f"业务包新增对持久化包的依赖：{pkg} -> {imp}"})
+        entry = {"rule": "new-layer-dependency", "file": pkg,
+                 "detail": f"业务包新增对持久化包的依赖：{pkg} -> {imp}"}
+        if mode == "optimize":
+            # 优化模式里这就是「假依赖倒置」：规则搬进业务层，业务层却仍然直接依赖持久层。
+            violations.append(entry)
+        else:
+            # 需求实现模式里判无效会系统性剔除 A 组：A 的后端包本就没有窄端口可用，
+            # Agent 直接用 dao 是该架构下的合理选择，而这正是要观察的结构弱点，不是作弊。
+            warnings.append({**entry, "detail": entry["detail"] + "（需求实现模式：仅记为观察项）"})
 
     before_api = defaultdict(set)
     after_api = defaultdict(set)

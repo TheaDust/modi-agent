@@ -95,7 +95,7 @@ test('guard rejects changed assertions, deleted classes and edited tools', async
   }
 });
 
-test('guard tolerates a moved assertion and rejects a new cross-layer dependency', async (t) => {
+test('guard tolerates a moved assertion and scopes the cross-layer rule by mode', async (t) => {
   const { cwd, test } = await javaRepo(t);
   await writeFile(join(cwd, 'src/test/java/com/example/service/AccountServiceTest.java'),
     test.replace('  void works() { assertEquals(1, service.find("a")); }\n', '')
@@ -105,9 +105,17 @@ test('guard tolerates a moved assertion and rejects a new cross-layer dependency
   const service = await readFile(join(cwd, 'src/main/java/com/example/service/AccountService.java'), 'utf8');
   await writeFile(join(cwd, 'src/main/java/com/example/service/AccountService.java'),
     service.replace('package com.example.service;\n', 'package com.example.service;\nimport com.example.dao.AccountDao;\n'));
-  const result = guard(cwd, 'feature');
-  assert.equal(result.valid, false);
-  assert.ok(result.violations.some((item) => item.rule === 'new-layer-dependency'));
+
+  // 需求实现模式：只记为观察项，不判无效 —— A 组在本架构下直连 dao 属合理选择
+  const feature = guard(cwd, 'feature');
+  assert.equal(feature.valid, true);
+  assert.equal(feature.violations.length, 0);
+  assert.ok(feature.warnings.some((item) => item.rule === 'new-layer-dependency'));
+
+  // 优化模式：假依赖倒置必须判无效
+  const optimize = guard(cwd, 'optimize');
+  assert.equal(optimize.valid, false);
+  assert.ok(optimize.violations.some((item) => item.rule === 'new-layer-dependency'));
 });
 
 test('guard rejects removal of a public method', async (t) => {

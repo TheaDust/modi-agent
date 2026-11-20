@@ -118,6 +118,16 @@ PowerShell 以当前副本为工作目录，具有本机进程权限；当前实
 是 H1「变更规模」的指标来源。`guard.json` 在行为等价性、public API、测试断言、既有类位置与
 跨层依赖上做事后检查：只把高置信度违规判为 `valid=false`，无法可靠判定的情况记为 `warnings`。
 非 Java 项目或缺少 git 基线时守卫降级为 `skipped` / `unavailable`，不会误判为无效。
+
+跨层依赖规则按模式区分，因为两件事的判据不同：
+
+| 规则 | `optimize` 模式 | `feature` 模式 |
+|---|---|---|
+| 业务包新增对持久化包的依赖 | **violation**（规则搬进业务层却仍直连 dao，是假依赖倒置） | **warning**（该架构下后端包本就没有窄端口可用，直连 dao 属合理实现，是被观察的结构弱点而非作弊） |
+
+`feature` 模式若把它判为违规，会系统性剔除 A 组：A 组的实现路径天然更靠近持久层，
+而这正是实验要观察的组间差异。因此该规则在 `feature` 模式只记入 `warnings`，
+不参与 `valid` 判定。
 `verification.json` 需要本机 Maven：在 `.env` 中设置 `MAVEN_PATH`，未设置时使用 PATH 中的 `mvn`。
 Token 使用 SDK 返回的统计；`cost` 按 `.env` 中的 `MODEL_COST_*` 单价（美元 / 百万 token）估算，
 在 `summary.json` 中给出输入、输出、缓存读取、缓存写入分项及 `total`；未填写时输入、输出、缓存读取默认使用
