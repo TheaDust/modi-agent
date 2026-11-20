@@ -1,24 +1,36 @@
 # 报告配图
 
-本目录存放课程报告用的两张图，均为原生 draw.io 文件，可直接在 draw.io 中继续编辑。
+本目录存放课程报告用的三张图，均为原生 draw.io 文件，可直接在 draw.io 中继续编辑。
 
 | 文件 | 用途 |
 |---|---|
-| `architecture-a-to-b.drawio` | 图 1：架构 A（重构前）与架构 B（重构后）的分层对比 |
+| `architecture-a.drawio` | 图 1a：架构 A（重构前） |
+| `architecture-b.drawio` | 图 1b：架构 B（重构后） |
 | `metrics-a-to-b.drawio` | 图 2：结构指标、兼容性与重构成本的量化对比 |
 | `*.drawio.png` / `*.drawio.svg` | 由上面的 `.drawio` 导出（PNG 为 2 倍分辨率，SVG 为矢量） |
 
-## 图 1：架构对比
+三张图共用一套视觉语言：白底、深灰标题、浅色底 + 细描边的方块、统一的圆角与字号。
+方块颜色只用来区分**角色**，不表示好坏：
 
-左栏是重构前的记账库，右栏是重构后的记账库，横向三处差别对应三件具体的事：
+| 颜色 | 含义 |
+|---|---|
+| 琥珀 | 业务规则（架构 A 中同一规则有两份，用虚线相连） |
+| 青绿 | 业务规则（架构 B 中唯一一份） |
+| 蓝 | 端口（由业务层定义、后端反向实现） |
+| 灰 | 存储实现 / 后端适配 / dao 接口 |
+| 白 + 深描边 | 对外入口 `Ledger` |
 
-1. **规则收敛** —— 业务规则从「内存后端 + JDBC 后端各写一遍」变成唯一一份
-   （`AbstractTransferService` / `AccountServiceImpl` / `AbstractStorageProvider`）。
-2. **依赖倒置** —— 业务层自己定义窄端口（`AccountStore` / `TransferStore`），
-   两个后端反向实现端口；`service` 包不再依赖 `dao` 包。
-3. **原语下沉** —— 后端只保留读一行、写一行、加锁、事务提交回滚等存储原语。
+## 图 1a / 1b：架构对比
 
-图中类名、包名与依赖方向均取自真实代码，不是示意性命名。
+两张图按同一个骨架对照：入口 `Ledger` 在上，下方是分层。
+
+- **图 1a**：规则写在后端包里。`memory 包` 与 `jdbc 包` 两列并排，各写了一份
+  `转账规则 / 账户规则 / 会话前导`，同名规则之间用虚线连起来 —— 一眼看出「同一条规则写了两遍」；
+  两列下方各有一份「存储实现」，说明规则与存储实现混在同一层。
+- **图 1b**：规则提到业务层，只有一份；业务层向下依赖自己定义的窄端口
+  `AccountStore` / `TransferStore`；两个后端用**向上的蓝色箭头**实现端口 —— 依赖倒置就画在这两支反向箭头上。
+
+图中结构与包名均取自真实代码，不是示意性命名。
 
 ## 图 2：指标对比
 
@@ -40,8 +52,8 @@
 在装有 draw.io 桌面版的机器上执行（`-e` 会把图的可编辑 XML 嵌入导出文件）：
 
 ```bash
-drawio -x -f png -e -b 12 -s 2 -o architecture-a-to-b.drawio.png architecture-a-to-b.drawio
-drawio -x -f svg -e -b 12          -o architecture-a-to-b.drawio.svg architecture-a-to-b.drawio
+drawio -x -f png -e -b 16 -s 2 -o architecture-a.drawio.png architecture-a.drawio
+drawio -x -f svg -e -b 16          -o architecture-a.drawio.svg architecture-a.drawio
 ```
 
 改图请直接编辑 `.drawio` 源文件，再重新导出 PNG / SVG。

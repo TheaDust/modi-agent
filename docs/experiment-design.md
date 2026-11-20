@@ -229,7 +229,8 @@ diff(A,  B) = git diff main..b/optimized     ← 架构改造的规模
 
 | 图 | 文件 | 用途 |
 |---|---|---|
-| 图 1 | `docs/figures/architecture-a-to-b.drawio` | 架构 A 与架构 B 的分层对比：规则收敛、依赖倒置、原语下沉三处差别 |
+| 图 1a | `docs/figures/architecture-a.drawio` | 架构 A（重构前）：同一条规则在两个后端各写一遍 |
+| 图 1b | `docs/figures/architecture-b.drawio` | 架构 B（重构后）：规则唯一一份，后端向上实现业务层定义的端口 |
 | 图 2 | `docs/figures/metrics-a-to-b.drawio` | 结构指标、对外兼容性与重构成本的量化对比 |
 
 两张图的数据来源与重新导出方式见 `docs/figures/README.md`。

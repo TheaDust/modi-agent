@@ -1,0 +1,29 @@
+<mxfile host="app.diagrams.net" agent="modi-agent" version="24.7.17" type="device">
+  <diagram id="architecture-b" name="architecture-b">
+    <mxGraphModel dx="900" dy="660" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="660" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+<mxCell id="c1" value="架构 B · 重构后" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=27;fontStyle=1;fontColor=#111827;" vertex="1" parent="1"><mxGeometry x="60" y="26" width="780" height="38" as="geometry" /></mxCell>
+<mxCell id="c2" value="业务规则只写一份，后端只保留存储原语" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=14;fontColor=#6B7280;" vertex="1" parent="1"><mxGeometry x="60" y="66" width="780" height="24" as="geometry" /></mxCell>
+<mxCell id="c3" value="Ledger" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#111827;strokeWidth=1.2;fontSize=16;fontColor=#111827;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="365" y="110" width="170" height="44" as="geometry" /></mxCell>
+<mxCell id="c4" value="" style="rounded=1;arcSize=4;html=1;fillColor=#FBFCFD;strokeColor=#EDEFF2;strokeWidth=1;" vertex="1" parent="1"><mxGeometry x="60" y="186" width="780" height="112" as="geometry" /></mxCell>
+<mxCell id="c5" value="业务规则（唯一一份）" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#6B7280;" vertex="1" parent="1"><mxGeometry x="78" y="198" width="400" height="24" as="geometry" /></mxCell>
+<mxCell id="c6" value="转账规则" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E9F7F4;strokeColor=#2A9D8F;strokeWidth=1.2;fontSize=15;fontColor=#125B51;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="78" y="234" width="240" height="50" as="geometry" /></mxCell>
+<mxCell id="c7" value="账户规则" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E9F7F4;strokeColor=#2A9D8F;strokeWidth=1.2;fontSize=15;fontColor=#125B51;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="330" y="234" width="240" height="50" as="geometry" /></mxCell>
+<mxCell id="c8" value="会话前导" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#E9F7F4;strokeColor=#2A9D8F;strokeWidth=1.2;fontSize=15;fontColor=#125B51;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="582" y="234" width="240" height="50" as="geometry" /></mxCell>
+<mxCell id="c9" value="" style="rounded=1;arcSize=4;html=1;fillColor=#FBFCFD;strokeColor=#EDEFF2;strokeWidth=1;" vertex="1" parent="1"><mxGeometry x="60" y="352" width="780" height="112" as="geometry" /></mxCell>
+<mxCell id="c10" value="端口（由业务层定义）" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#6B7280;" vertex="1" parent="1"><mxGeometry x="78" y="364" width="400" height="24" as="geometry" /></mxCell>
+<mxCell id="c11" value="AccountStore" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EDF4FB;strokeColor=#3D7EBF;strokeWidth=1.2;fontSize=15;fontColor=#1B4F72;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="190" y="400" width="240" height="50" as="geometry" /></mxCell>
+<mxCell id="c12" value="TransferStore" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#EDF4FB;strokeColor=#3D7EBF;strokeWidth=1.2;fontSize=15;fontColor=#1B4F72;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="470" y="400" width="240" height="50" as="geometry" /></mxCell>
+<mxCell id="c13" value="内存后端" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1F5F9;strokeColor=#A3B0C0;strokeWidth=1.2;fontSize=15;fontColor=#334155;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="190" y="510" width="240" height="52" as="geometry" /></mxCell>
+<mxCell id="c14" value="JDBC 后端" style="rounded=1;arcSize=12;html=1;whiteSpace=wrap;fillColor=#F1F5F9;strokeColor=#A3B0C0;strokeWidth=1.2;fontSize=15;fontColor=#334155;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="470" y="510" width="240" height="52" as="geometry" /></mxCell>
+<mxCell id="e15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9AA5B4;strokeWidth=1.6;endArrow=block;endFill=1;endSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c3" target="c4"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+<mxCell id="e16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#3D7EBF;strokeWidth=2.2;endArrow=block;endFill=1;endSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c4" target="c9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+<mxCell id="e17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#3D7EBF;strokeWidth=2.2;endArrow=block;endFill=1;endSize=10;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.3205;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="c13" target="c9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+<mxCell id="e18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#3D7EBF;strokeWidth=2.2;endArrow=block;endFill=1;endSize=10;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.6795;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="c14" target="c9"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+<mxCell id="c19" value="依赖倒置：业务层定义窄端口，两个后端向上实现它&#10;dao 接口原样保留，但 service 包不再依赖它" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=13;fontColor=#6B7280;" vertex="1" parent="1"><mxGeometry x="60" y="600" width="780" height="44" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
