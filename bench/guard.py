@@ -270,7 +270,8 @@ def check(workspace, mode):
         "valid": True,
         "violations": [],
         "warnings": [],
-        "api": {"addedTypes": [], "removedTypes": [], "addedMethods": 0, "removedMethods": 0},
+        "api": {"addedTypes": [], "removedTypes": [], "addedMethods": 0, "removedMethods": 0,
+                "changedSignatures": []},
     }
     if not os.path.isfile(os.path.join(workspace, "pom.xml")):
         result["status"] = "skipped"
@@ -352,13 +353,6 @@ def check(workspace, mode):
         if not any(v["rule"] in {"class-moved", "class-renamed-or-moved", "class-deleted"}
                    and v["file"] == type_key[1] for v in violations):
             result["api"]["removedTypes"].append(".".join(type_key))
-    for type_key in sorted(set(before_api) & set(after_api)):
-        removed = before_api[type_key] - after_api[type_key]
-        if removed:
-            result["api"]["removedMethods"] += len(removed)
-        added = after_api[type_key] - before_api[type_key]
-        if added:
-            result["api"]["addedMethods"] += len(added)
     for type_key in sorted(set(after_api) - set(before_api)):
         result["api"]["addedTypes"].append(".".join(type_key))
     for type_key, methods in sorted(before_api.items()):
@@ -371,12 +365,34 @@ def check(workspace, mode):
             continue
         violations.append({"rule": "public-type-removed", "file": type_key[1],
                            "detail": "public 类型被删除：" + ".".join(type_key)})
-    for type_key, methods in sorted(before_api.items()):
-        if type_key not in after_api:
-            continue
-        for sig, ret in sorted(methods - after_api[type_key]):
-            violations.append({"rule": "public-api-removed", "file": type_key[1],
-                               "detail": f"public 方法签名消失：{'.'.join(type_key)}.{sig} : {ret}"})
+    # 逐类型区分「方法被删除」与「签名被替换」：
+    #   删除 = 功能消失，既破坏对外契约，也让 diff 变小，是真实的作弊通道，必须判违规；
+    #   替换 = 方法仍在，只是参数形态变了，属于需求未规定的实现自由度。冻结验收与
+    #          既有契约测试都不依赖这些签名，判整轮无效会引入与被测架构相关的系统性
+    #          抽样偏差（A 组无接缝时 agent 自然改签名，重跑到通过即筛掉"运气差"的样本，
+    #          B 组有接缝时自然加重载，无需重跑）。改为记录，不判无效。
+    deleted_methods = []
+    for type_key in sorted(set(before_api) & set(after_api)):
+        after_names = {sig.split("(", 1)[0] for sig, _ in after_api[type_key]}
+        for sig, ret in sorted(before_api[type_key] - after_api[type_key]):
+            name = sig.split("(", 1)[0]
+            if name in after_names:
+                result["api"]["changedSignatures"].append({
+                    "type": ".".join(type_key),
+                    "before": sig + " : " + ret,
+                    "after": sorted(s + " : " + r for s, r in after_api[type_key]
+                                    if s.split("(", 1)[0] == name),
+                })
+            else:
+                deleted_methods.append((type_key, sig, ret))
+        added = after_api[type_key] - before_api[type_key]
+        if added:
+            result["api"]["addedMethods"] += len(added)
+
+    result["api"]["removedMethods"] = len(deleted_methods)
+    for type_key, sig, ret in deleted_methods:
+        violations.append({"rule": "public-api-removed", "file": type_key[1],
+                           "detail": f"public 方法被删除：{'.'.join(type_key)}.{sig} : {ret}"})
 
     if mode == "feature":
         for path, unit in before.items():
