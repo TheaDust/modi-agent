@@ -52,7 +52,7 @@ class R4AcceptanceTest {
     assertThat(postings).hasSize(2);
     assertThat(postings.get(0).getTransactionRef()).isEqualTo("T1");
     assertThat(postings.get(1).getTransactionRef()).isEqualTo("T2");
-    assertThat(postings.get(0).getTransactionType()).isEqualTo("sale");
+    assertThat(postings.get(0).getTransactionType()).isEqualTo("payout");
     assertThat(postings.get(0).getActor()).isNull();
     AcceptanceSupport.assertAmountAbs(postings.get(0).getAmount(), "10.00");
     assertThat(postings.get(0).getTimestamp()).isNotNull();

@@ -24,10 +24,18 @@ final class AcceptanceSupport {
   private AcceptanceSupport() {}
 
   static Ledger ledger(String name, String cashAmount) {
+    return ledger(name, cashAmount, "0.00");
+  }
+
+  /**
+   * 收入账户默认无余额；需要从收入账户借记的用例必须显式给它资金，
+   * 否则会被项目原有的余额校验（InsufficientFundsException）先拦下，测不到目标行为。
+   */
+  static Ledger ledger(String name, String cashAmount, String revenueAmount) {
     ChartOfAccounts chart =
         new ChartOfAccountsBuilder()
             .create("CASH", cashAmount, "EUR")
-            .create("REVENUE", "0.00", "EUR")
+            .create("REVENUE", revenueAmount, "EUR")
             .build();
     return new LedgerBuilder(chart).name(name).clock(CLOCK).build().init();
   }

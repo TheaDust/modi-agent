@@ -54,7 +54,7 @@ class R5AcceptanceTest {
 
   @Test
   void budgetsAreCheckedPerAccount() {
-    Ledger ledger = AcceptanceSupport.ledger("r5-per-account", "1000.00");
+    Ledger ledger = AcceptanceSupport.ledger("r5-per-account", "1000.00", "1000.00");
     BudgetService budgets = ledger.budgetService();
     budgets.setBudget("CASH", AcceptanceSupport.PERIOD, Money.toMoney("100.00", "EUR"));
 
