@@ -10,6 +10,16 @@ export const TOOLS = {
   feature: ['read', 'grep', 'find', 'ls', 'edit', 'write', 'powershell'],
 };
 
+// 运行控制项，A/B 两组完全一致。
+// 开启自动重试是为了抵御网关的瞬时传输错误：连接中断与实现质量无关，
+// 不重试会随机淘汰某一组的某一轮，既浪费一次样本，也会给配对比较引入与自变量无关的噪声。
+export const CONTROLS = {
+  compaction: false,
+  retries: true,
+  maxRetries: 3,
+  cacheWarming: false,
+};
+
 const roundCost = (value) => Math.round(value * 1e9) / 1e9;
 
 function calculateCost(usage, pricing) {
@@ -61,7 +71,7 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
   let finalMessage;
   const usage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0 };
   const interrupt = () => { termination = 'interrupted'; session?.agent.abort(); };
-  await saveJson('config.json', { ...publicConfig(config), mode, cwd, tools: TOOLS[mode], compaction: false, retries: false, cacheWarming: false });
+  await saveJson('config.json', { ...publicConfig(config), mode, cwd, tools: TOOLS[mode], ...CONTROLS });
   await writeFile(join(outputDir, 'prompt.md'), redact(prompt));
   await writeFile(join(outputDir, 'system-prompt.md'), redact(systemPrompt));
   try {
@@ -103,7 +113,7 @@ export async function runAgent({ config, cwd, outputDir, mode, prompt, systemPro
       sessionManager: sdk.SessionManager.inMemory(cwd),
       settingsManager: sdk.SettingsManager.inMemory({
         compaction: { enabled: false }, cacheWarming: 'off',
-        retry: { enabled: false, provider: { maxRetries: 0 } },
+        retry: { enabled: CONTROLS.retries, provider: { maxRetries: CONTROLS.maxRetries } },
         enableAnalytics: false, enableInstallTelemetry: false,
       }),
     }));

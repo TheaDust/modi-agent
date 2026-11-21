@@ -7,7 +7,7 @@
   "scripts": {
     "agent": "node --env-file=.env bench/run.mjs",
     "agent:check": "node --env-file=.env agent/check.mjs",
-    "agent:smoke": "node --env-file=.env --test test/agent.test.mjs test/bench.test.mjs",
+    "agent:smoke": "node --env-file=.env --test test/agent.test.mjs test/bench.test.mjs test/chain.test.mjs",
     "bench:test": "node --env-file=.env --test test/bench.test.mjs"
   }
 }
