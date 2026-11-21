@@ -23,6 +23,21 @@ Agent 收到的完整内容 = 固定的系统提示词（`prompts/feature.md`）
 | R3 / R4 / R5 | 原文允许「获取方式可自行选择」，A/B 可能暴露不同名称的服务访问器，破坏 API 可比性 | 分别固定 `Ledger.reconciliationService()` / `postingHistoryService()` / `budgetService()` |
 | R4 | 未规定给操作者赋值的构建器方法名 | 规定 `TransferRequest.BuildStep.actor(String)` |
 
+另有一处**冻结验收用例自身的矛盾**，在 R4 轮实测中暴露：A 组与 B 组同时、同一条断言失败
+（`expected: <sale> but was: <payout>`）。原因是 `AcceptanceSupport.payment(...)` 提交的交易类型
+固定为 `"payout"`，而 `R4AcceptanceTest.postingsAreListedPerAccountInSubmissionOrder` 却断言
+`getTransactionType()` 等于 `"sale"`——用例与自己的辅助方法互相矛盾。两组实现返回的都是实际提交的类型
+`"payout"`，属正确行为。该断言已订正为 `"payout"`。
+
+> 此订正只改判据，不改需求，也不偏向任何一组：两组在同一判据下都通过。
+> 订正后需对已完成的 R4/R5 轮次重新执行冻结验收，原始验收记录一并留档。
+
+R5 的冻结用例另有一处**自身构造的转账不合法**：`budgetsAreCheckedPerAccount` 提交了一笔借记
+`REVENUE` 500.00 的转账，而该用例的账本里 `REVENUE` 余额为 0.00，于是被项目**原有**的余额校验
+（`TransferValidatorImpl.validBalance` → `InsufficientFundsException`）先行拒绝，根本走不到预算逻辑，
+A 组与 B 组同时以同一原因失败。已给该用例的收入账户补足资金（`AcceptanceSupport` 增加带收入余额的重载），
+断言与需求意图均未改动。
+
 这些修订只固定**对外 API 表面**，不涉及实现位置、模块归属或设计模式，不违反铁律 1。
 
 ## 三条设计铁律
@@ -50,10 +65,16 @@ R1 → R2 → R3 → R4 → R5 **逐轮累积**（第 N 轮的代码包含前 N-
 这样才能画出「架构劣化曲线」：A 组随轮次推进改动面越来越大，B 组保持平稳。
 
 ```
-轮次   A 组起点            B 组起点            产出
-R1     A                  B                  C1 / D1
-R2     C1                 D1                 C2 / D2
-R3     C2                 D2                 C3 / D3
-R4     C3                 D3                 C4 / D4
-R5     C4                 D4                 C5 / D5
+轮次   A 组起点            B 组起点            产出（k = 1,2,3 各重复一次）
+R1     A_0                B_0                A_1^k / B_1^k
+R2     A_1^k              B_1^k              A_2^k / B_2^k
+R3     A_2^k              B_2^k              A_3^k / B_3^k
+R4     A_3^k              B_3^k              A_4^k / B_4^k
+R5     A_4^k              B_4^k              A_5^k / B_5^k
 ```
+
+> 记法：`A_i^k` = 原版轨迹的第 k 次重复、累积实现前 i 个需求后的代码；
+> `B_i^k` = 优化版轨迹上的对应版本；`i=0` 即两条链共用的基线，
+> `k` 是重复序号（本实验 N=3，k ∈ {1,2,3}）。
+> 同一个 k 的 A/B 两条链并行执行，构成一个配对。
+> 详见 `docs/experiment-design.md` §5。

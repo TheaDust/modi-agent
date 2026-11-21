@@ -1,12 +1,13 @@
 # 报告配图
 
-本目录存放课程报告用的三张图，均为原生 draw.io 文件，可直接在 draw.io 中继续编辑。
+本目录存放课程报告用的四张图，均为原生 draw.io 文件，可直接在 draw.io 中继续编辑。
 
 | 文件 | 用途 |
 |---|---|
 | `architecture-a.drawio` | 图 1a：架构 A（重构前） |
 | `architecture-b.drawio` | 图 1b：架构 B（重构后） |
 | `metrics-a-to-b.drawio` | 图 2：结构指标、兼容性与重构成本的量化对比 |
+| `degradation-curve.drawio` | 图 3：R0–R5 的架构劣化曲线（N=3，主结论） |
 | `*.drawio.png` / `*.drawio.svg` | 由上面的 `.drawio` 导出（PNG 为 2 倍分辨率，SVG 为矢量） |
 
 三张图共用一套视觉语言：白底、深灰标题、浅色底 + 细描边的方块、统一的圆角与字号。
@@ -62,6 +63,22 @@
 | 反作弊守卫 0 违规 0 警告 | 优化 run 的 `guard.json` |
 
 优化 run 指 `results/2026-11-20T08-41-49-404Z-bookkeeping-optimize-3d81d743`。
+图 2 只描述 `A_0` → `B_0` 那一次架构改造本身，不含 R1–R5 数据，因此不受 N=3 扩充影响。
+
+## 图 3：架构劣化曲线（N=3）
+
+主结论的可视化：横轴是累计实现的需求数（R0 即基线），纵轴是「有效多后端重复规则数」。
+每条链画 3 条细虚线（各次重复）+ 1 条粗实线（三次重复的中位数），A 链琥珀、B 链青绿，
+沿用图 1a/1b 的配色语言。
+
+| 图上数值 | 来源 |
+|---|---|
+| 每条线 6 个点（R0–R5） | `python tools/results.py --json out.json` 输出的 `structure[*].effective_multi_backend_rule_count` |
+| R0 = `A_0` 12、`B_0` 8 | 同上，`structure.A_0` / `structure.B_0` |
+| 中位数序列 A：12/13/16/16/16/20；B：8/8/8/8/8/9 | 对 3 次重复逐点取中位数（偶数个时取两中值均值记为 8~9） |
+| 「15/15 个配对 B 更少」 | 同一 JSON 的 `overall.effective_multi_backend_rule_count.bBetter` |
+
+图 3 的曲线由上述 JSON 直接生成，没有手工填写数值；数据与判定口径见 `docs/results.md` §3.3。
 
 ## 重新导出
 
@@ -70,6 +87,7 @@
 ```bash
 drawio -x -f png -e -b 16 -s 2 -o architecture-a.drawio.png architecture-a.drawio
 drawio -x -f svg -e -b 16          -o architecture-a.drawio.svg architecture-a.drawio
+# 其余两张同理；图 3 的文件名前缀为 degradation-curve
 ```
 
 改图请直接编辑 `.drawio` 源文件，再重新导出 PNG / SVG。

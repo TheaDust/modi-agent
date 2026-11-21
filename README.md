@@ -7,6 +7,7 @@
 ## 从这里开始
 
 - [实验设计](docs/experiment-design.md)：研究假设、控制变量、指标、版本组织与有效性威胁。
+- [实验结果](docs/results.md)：R1–R5 的 A/B 配对实测数据（N=3）、假设判定、执行过程与局限。
 - [记账库基准项目](benchmarks/bookkeeping/README.md)：第一个案例，含源码、需求 R1–R5 和既有架构分析。
 - [cron-utils 基准项目](benchmarks/cron-utils/README.md)：第二个案例，含源码、测试夹具补丁与基线验证记录。
 - [Agent 运行说明](docs/agent-runtime.md)：本机 Pi SDK、`.env`、任务入口和运行日志。
@@ -17,13 +18,17 @@
 modi-agent/
 ├── README.md
 ├── docs/
-│   └── experiment-design.md
+│   ├── experiment-design.md
+│   ├── agent-runtime.md
+│   ├── results.md
+│   └── figures/                  # 报告配图（draw.io 源文件 + PNG/SVG）
 ├── benchmarks/
 │   ├── bookkeeping/
 │   │   ├── README.md
 │   │   ├── source/               # 固定上游源码
 │   │   ├── requirements/         # R1–R5
 │   │   ├── baseline/             # 结构指标快照
+│   │   ├── runs.json             # 各链各轮产物与起点清单
 │   │   ├── provenance.json
 │   │   ├── selection.md
 │   │   └── architecture.md
@@ -33,10 +38,10 @@ modi-agent/
 │       ├── patches/
 │       ├── provenance.json
 │       └── selection.md
-├── tools/                        # 选型、固化、分析与端点探测脚本
+├── tools/                        # 选型、固化、分析与端点探测脚本（含 results.py 汇总）
 ├── agent/                        # Pi SDK 加载、模型配置与运行内核
 ├── prompts/                      # 检查、优化和需求实现提示词
-├── bench/                        # 独立工作副本与单轮执行入口
+├── bench/                        # 单轮执行入口、工作副本准备与链编排（chain.mjs）
 ├── test/                         # 使用本地模拟端点的框架测试
 ├── results/                      # 每轮产物与工作副本，不入库
 └── .cache/                       # 本地数据，不入库
@@ -45,9 +50,10 @@ modi-agent/
     └── legacy-tools/             # 保留的早期临时脚本
 ```
 
-每个基准项目 的源码、需求和证据放在同一目录。A/B 表示同一案例的原版与优化版，不用于区分两个案例。
+每个基准项目的源码、需求和证据放在同一目录。字母 A/B 区分原版与优化版轨迹，下标 i 是累积轮次，
+上标 k 是重复序号（`A_i^k` / `B_i^k`），详见 `docs/experiment-design.md` §5。
 
-单轮 Agent 已实现，并附带行级 diff、反作弊守卫与独立测试验收；多次配对实验与跨轮统计后续在 `bench/` 中实现。
+单轮执行、多次配对实验（N=3）、跨轮统计与反作弊守卫均已落地；净投资回报分析与第二案例的需求轮次仍待完成。
 
 ## 启动 Agent
 
