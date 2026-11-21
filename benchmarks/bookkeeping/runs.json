@@ -1,0 +1,78 @@
+{
+  "benchmark": "bookkeeping",
+  "note": "各链各轮对应的产物目录名，以及该链的起点目录（base）。side=A 原版轨迹 / B 优化版轨迹；replicate 是重复序号；round 是该链内累积实现的第几轮需求。B 链的 base 是 B_0 的工作副本，累计净变更以它为基准。",
+  "chains": [
+    {
+      "side": "A",
+      "replicate": 1,
+      "rounds": {
+        "R1": "2026-11-20T16-15-37-888Z-bookkeeping-feature-ca6c08be",
+        "R2": "2026-11-20T16-39-37-893Z-bookkeeping-feature-7a16c141",
+        "R3": "2026-11-21T04-35-21-214Z-bookkeeping-feature-9ab6781b",
+        "R4": "2026-11-21T05-15-55-119Z-bookkeeping-feature-2354f994",
+        "R5": "2026-11-21T06-11-48-585Z-bookkeeping-feature-7e0dbb6f"
+      },
+      "base": "benchmarks/bookkeeping/source"
+    },
+    {
+      "side": "A",
+      "replicate": 2,
+      "rounds": {
+        "R1": "2026-11-21T08-36-31-567Z-bookkeeping-feature-8c5781c0",
+        "R2": "2026-11-21T09-01-31-316Z-bookkeeping-feature-a130af39",
+        "R3": "2026-11-21T09-38-14-015Z-bookkeeping-feature-3e412c6d",
+        "R4": "2026-11-21T09-55-41-484Z-bookkeeping-feature-4941c51d",
+        "R5": "2026-11-21T10-20-15-252Z-bookkeeping-feature-4678e600"
+      },
+      "base": "benchmarks/bookkeeping/source"
+    },
+    {
+      "side": "A",
+      "replicate": 3,
+      "rounds": {
+        "R1": "2026-11-21T08-36-31-837Z-bookkeeping-feature-ecb3bceb",
+        "R2": "2026-11-21T08-57-55-614Z-bookkeeping-feature-163a7739",
+        "R3": "2026-11-21T09-27-13-872Z-bookkeeping-feature-955bd963",
+        "R4": "2026-11-21T09-54-55-644Z-bookkeeping-feature-931fbb9d",
+        "R5": "2026-11-21T10-23-45-460Z-bookkeeping-feature-1d21ff72"
+      },
+      "base": "benchmarks/bookkeeping/source"
+    },
+    {
+      "side": "B",
+      "replicate": 1,
+      "rounds": {
+        "R1": "2026-11-20T16-26-48-734Z-bookkeeping-feature-b2419afa",
+        "R2": "2026-11-21T03-47-44-978Z-bookkeeping-feature-b9a50cf1",
+        "R3": "2026-11-21T04-57-13-835Z-bookkeeping-feature-2292a94f",
+        "R4": "2026-11-21T05-44-27-960Z-bookkeeping-feature-75361958",
+        "R5": "2026-11-21T06-51-04-954Z-bookkeeping-feature-df59fbd4"
+      },
+      "base": "results/2026-11-20T08-41-49-404Z-bookkeeping-optimize-3d81d743/workspace"
+    },
+    {
+      "side": "B",
+      "replicate": 2,
+      "rounds": {
+        "R1": "2026-11-21T08-36-31-729Z-bookkeeping-feature-9198e1bf",
+        "R2": "2026-11-21T09-04-09-179Z-bookkeeping-feature-36ee1f44",
+        "R3": "2026-11-21T09-33-12-729Z-bookkeeping-feature-17fdcc3e",
+        "R4": "2026-11-21T09-44-40-484Z-bookkeeping-feature-4e5324c0",
+        "R5": "2026-11-21T10-11-57-526Z-bookkeeping-feature-0955638d"
+      },
+      "base": "results/2026-11-20T08-41-49-404Z-bookkeeping-optimize-3d81d743/workspace"
+    },
+    {
+      "side": "B",
+      "replicate": 3,
+      "rounds": {
+        "R1": "2026-11-21T08-36-31-966Z-bookkeeping-feature-aff26337",
+        "R2": "2026-11-21T09-10-40-356Z-bookkeeping-feature-ca08e299",
+        "R3": "2026-11-21T09-32-22-151Z-bookkeeping-feature-83c08cc7",
+        "R4": "2026-11-21T09-48-41-768Z-bookkeeping-feature-f579e3cb",
+        "R5": "2026-11-21T10-14-12-899Z-bookkeeping-feature-fe7c0f1c"
+      },
+      "base": "results/2026-11-20T08-41-49-404Z-bookkeeping-optimize-3d81d743/workspace"
+    }
+  ]
+}
