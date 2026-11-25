@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="r5-budget-example" name="r5-budget-example">
+    <mxGraphModel page="1" pageWidth="1600" pageHeight="900" grid="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" vertex="1" value="" style="html=1;whiteSpace=wrap;rounded=0;absoluteArcSize=1;arcSize=0;fillColor=#FFFFFF;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=26;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="900" />
+        </mxCell>
+        <mxCell id="3" parent="1" vertex="1" value="R5 案例：预算检查从两处接入到一处" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=48;fontColor=#172B42;fontStyle=1;align=left;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="66" y="53" width="1468" height="69" />
+        </mxCell>
+        <mxCell id="4" parent="1" vertex="1" value="第 1 对完整链的转账路径。两组均须在记账前检查预算上限。" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=25;fontColor=#486077;fontStyle=0;align=left;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="130" width="1460" height="40" />
+        </mxCell>
+        <mxCell id="5" parent="1" vertex="1" value="A₅  原版轨迹" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=35;fontColor=#A65313;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="205" width="705" height="66" />
+        </mxCell>
+        <mxCell id="6" parent="1" vertex="1" value="B₅  优化轨迹" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#DCF5EF;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=35;fontColor=#067A6C;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="825" y="205" width="705" height="66" />
+        </mxCell>
+        <mxCell id="7" parent="1" vertex="1" value="&lt;b&gt;MemTransferService&lt;/b&gt;&lt;br&gt;内存转账入口" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=23;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="85" y="338" width="348" height="103" />
+        </mxCell>
+        <mxCell id="8" parent="1" vertex="1" value="&lt;b&gt;BudgetLimits.check&lt;/b&gt;&lt;br&gt;接入预算检查" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#A65313;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="505" y="338" width="252" height="103" />
+        </mxCell>
+        <mxCell id="9" parent="1" edge="1" source="7" target="8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#A65313;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="10" parent="1" vertex="1" value="&lt;b&gt;JdbcTransferService&lt;/b&gt;&lt;br&gt;JDBC 转账入口" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=23;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="85" y="498" width="348" height="103" />
+        </mxCell>
+        <mxCell id="11" parent="1" vertex="1" value="&lt;b&gt;BudgetLimits.check&lt;/b&gt;&lt;br&gt;接入预算检查" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#A65313;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="505" y="498" width="252" height="103" />
+        </mxCell>
+        <mxCell id="12" parent="1" edge="1" source="10" target="11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#A65313;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="13" parent="1" vertex="1" value="&lt;b&gt;MemTransferService&lt;/b&gt;&lt;br&gt;内存转账入口" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=22;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="842" y="338" width="322" height="103" />
+        </mxCell>
+        <mxCell id="14" parent="1" vertex="1" value="&lt;b&gt;AbstractTransferService&lt;/b&gt;&lt;br&gt;共享的预算检查" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#DCF5EF;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=22;fontColor=#067A6C;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="1234" y="392" width="276" height="154" />
+        </mxCell>
+        <mxCell id="15" parent="1" edge="1" source="13" target="14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#067A6C;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="16" parent="1" vertex="1" value="&lt;b&gt;JdbcTransferService&lt;/b&gt;&lt;br&gt;JDBC 转账入口" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=22;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="842" y="498" width="322" height="103" />
+        </mxCell>
+        <mxCell id="17" parent="1" edge="1" source="16" target="14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#067A6C;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="18" parent="1" vertex="1" value="共用校验函数&lt;br&gt;两个转账服务各自接入" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=30;fontColor=#A65313;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="688" width="705" height="85" />
+        </mxCell>
+        <mxCell id="19" parent="1" vertex="1" value="共用转账流程&lt;br&gt;在共享服务中接入" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#DCF5EF;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=30;fontColor=#067A6C;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="825" y="688" width="705" height="85" />
+        </mxCell>
+        <mxCell id="20" parent="1" vertex="1" value="存储操作仍由各后端负责。图中只展示转账前预算检查的接入位置。" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=25;fontColor=#486077;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="827" width="1460" height="43" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

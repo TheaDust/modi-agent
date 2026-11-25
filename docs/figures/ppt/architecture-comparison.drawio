@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="architecture-comparison" name="architecture-comparison">
+    <mxGraphModel page="1" pageWidth="1600" pageHeight="900" grid="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" vertex="1" value="" style="html=1;whiteSpace=wrap;rounded=0;absoluteArcSize=1;arcSize=0;fillColor=#FFFFFF;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=26;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="900" />
+        </mxCell>
+        <mxCell id="3" parent="1" vertex="1" value="把共享业务规则提到后端之上" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=48;fontColor=#172B42;fontStyle=1;align=left;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="66" y="53" width="1468" height="69" />
+        </mxCell>
+        <mxCell id="4" parent="1" vertex="1" value="记账库  ·  账户规则、转账规则和会话初始化" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=25;fontColor=#486077;fontStyle=0;align=left;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="130" width="1460" height="40" />
+        </mxCell>
+        <mxCell id="5" parent="1" vertex="1" value="A₀  原版" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=34;fontColor=#A65313;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="199" width="705" height="68" />
+        </mxCell>
+        <mxCell id="6" parent="1" vertex="1" value="Ledger" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFFFFF;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=31;fontColor=#172B42;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="309" y="306" width="226" height="59" />
+        </mxCell>
+        <mxCell id="7" parent="1" vertex="1" value="" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=26;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="108" y="412" width="298" height="379" />
+        </mxCell>
+        <mxCell id="8" parent="1" vertex="1" value="内存后端" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=28;fontColor=#172B42;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="118" y="428" width="278" height="60" />
+        </mxCell>
+        <mxCell id="9" parent="1" vertex="1" value="&lt;b&gt;业务规则&lt;/b&gt;&lt;br&gt;账户规则&lt;br&gt;转账规则&lt;br&gt;会话初始化" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#A65313;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="122" y="505" width="270" height="141" />
+        </mxCell>
+        <mxCell id="10" parent="1" vertex="1" value="存储实现" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFFFFF;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=26;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="122" y="671" width="270" height="83" />
+        </mxCell>
+        <mxCell id="11" parent="1" edge="1" source="6" target="8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#506980;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="12" parent="1" vertex="1" value="" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=26;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="439" y="412" width="298" height="379" />
+        </mxCell>
+        <mxCell id="13" parent="1" vertex="1" value="JDBC 后端" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=28;fontColor=#172B42;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="449" y="428" width="278" height="60" />
+        </mxCell>
+        <mxCell id="14" parent="1" vertex="1" value="&lt;b&gt;业务规则&lt;/b&gt;&lt;br&gt;账户规则&lt;br&gt;转账规则&lt;br&gt;会话初始化" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFF1E2;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#A65313;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="453" y="505" width="270" height="141" />
+        </mxCell>
+        <mxCell id="15" parent="1" vertex="1" value="存储实现" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFFFFF;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=26;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="453" y="671" width="270" height="83" />
+        </mxCell>
+        <mxCell id="16" parent="1" edge="1" source="6" target="13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#506980;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="17" parent="1" vertex="1" value="B₀  优化版" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#DCF5EF;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=34;fontColor=#067A6C;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="825" y="199" width="705" height="68" />
+        </mxCell>
+        <mxCell id="18" parent="1" vertex="1" value="Ledger" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#FFFFFF;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=31;fontColor=#172B42;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="1064" y="306" width="226" height="59" />
+        </mxCell>
+        <mxCell id="19" parent="1" vertex="1" value="&lt;b&gt;共享业务规则&lt;/b&gt;&lt;br&gt;账户规则 · 转账规则 · 会话初始化" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#DCF5EF;strokeColor=#067A6C;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=28;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="862" y="412" width="631" height="119" />
+        </mxCell>
+        <mxCell id="20" parent="1" vertex="1" value="&lt;b&gt;业务层端口&lt;/b&gt;&lt;br&gt;AccountStore · TransferStore" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#E8F0FD;strokeColor=#235695;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="895" y="572" width="565" height="74" />
+        </mxCell>
+        <mxCell id="21" parent="1" vertex="1" value="&lt;b&gt;内存适配器&lt;/b&gt;&lt;br&gt;内存读写" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="863" y="720" width="298" height="71" />
+        </mxCell>
+        <mxCell id="22" parent="1" vertex="1" value="&lt;b&gt;JDBC 适配器&lt;/b&gt;&lt;br&gt;数据库读写" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=#F1F5FA;strokeColor=#CBD7E4;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#172B42;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="1194" y="720" width="298" height="71" />
+        </mxCell>
+        <mxCell id="23" parent="1" edge="1" source="18" target="19" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#506980;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="24" parent="1" edge="1" source="19" target="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#506980;endArrow=classic;endFill=1;dashed=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="25" parent="1" edge="1" source="21" target="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#235695;endArrow=block;endFill=0;dashed=1;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="26" parent="1" edge="1" source="22" target="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=3;strokeColor=#235695;endArrow=block;endFill=0;dashed=1;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="27" parent="1" vertex="1" value="规则与存储实现分布在两个后端" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=25;fontColor=#A65313;fontStyle=1;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="70" y="824" width="710" height="43" />
+        </mxCell>
+        <mxCell id="28" parent="1" vertex="1" value="蓝色虚线表示适配器实现业务层端口" style="html=1;whiteSpace=wrap;rounded=1;absoluteArcSize=1;arcSize=16;fillColor=none;strokeColor=none;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=24;fontColor=#235695;fontStyle=0;align=center;verticalAlign=middle;spacing=5;">
+          <mxGeometry as="geometry" x="825" y="824" width="705" height="43" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

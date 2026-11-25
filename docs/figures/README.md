@@ -75,10 +75,11 @@
 |---|---|
 | 每条线 6 个点（R0–R5） | `python tools/results.py --json out.json` 输出的 `structure[*].effective_multi_backend_rule_count` |
 | R0 = `A_0` 12、`B_0` 8 | 同上，`structure.A_0` / `structure.B_0` |
-| 中位数序列 A：12/13/16/16/16/20；B：8/8/8/8/8/9 | 对 3 次重复逐点取中位数（偶数个时取两中值均值记为 8~9） |
+| 中位数序列 A：12/13/16/16/16/20；B：8/8/8/8/8/9 | 对 3 次重复逐点取中位数 |
+| 两组中位数之差 4→11 | 同轮 A、B 中位数相减 |
 | 「15/15 个配对 B 更少」 | 同一 JSON 的 `overall.effective_multi_backend_rule_count.bBetter` |
 
-图 3 的曲线由上述 JSON 直接生成，没有手工填写数值；数据与判定口径见 `docs/results.md` §3.3。
+图 3 的曲线对应上述 JSON。数据与判定口径见 `docs/results.md` §3.3。
 
 ## 重新导出
 
